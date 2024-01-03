@@ -8,78 +8,8 @@ jobs:
       fail-fast: false
       matrix:
         environments:
-          - "rfbridge"
-          - "rfbridge-direct"
-          - "esp32dev-all-test"
-          - "esp32dev-rf"
-          - "esp32dev-pilight-cc1101"
-          - "esp32dev-somfy-cc1101"
-          - "esp32dev-pilight-somfy-cc1101"
-          - "esp32dev-weatherstation"
-          - "esp32dev-gf-sun-inverter"
-          - "esp32dev-ir"
-          - "esp32dev-ble"
-          - "esp32dev-ble-mqtt-undecoded"
-          - "esp32dev-ble-aws"
-          - "esp32feather-ble"
-          - "esp32-lolin32lite-ble"
-          - "esp32-olimex-gtw-ble-eth"
-          - "esp32-olimex-gtw-ble-poe"
-          - "esp32-olimex-gtw-ble-poe-iso"
-          - "esp32-wt32-eth01-ble-eth"
-          - "esp32-olimex-gtw-ble-wifi"
-          - "esp32-m5stick-ble"
-          - "esp32-m5stack-ble"
-          - "esp32-m5tough-ble"
-          - "esp32-m5stick-c-ble"
-          - "esp32-m5stick-cp-ble"
-          - "esp32s3-atomS3U"
-          - "esp32-m5atom-matrix"
-          - "esp32-m5atom-lite"
-          - "esp32dev-rtl_433"
-          - "esp32doitv1-aithinker-r01-sx1278"
-          - "heltec-rtl_433"
-          - "heltec-rtl_433-fsk"
-          - "heltec-ble"
-          - "lilygo-rtl_433"
-          - "lilygo-rtl_433-fsk"
-          - "lilygo-ble"
-          - "esp32dev-multi_receiver"
-          - "esp32dev-multi_receiver-pilight"
-          - "tinypico-ble"
-          - "ttgo-lora32-v1"
           - "ttgo-lora32-v21"
-          - "ttgo-t-beam"
-          - "heltec-wifi-lora-32"
-          - "shelly-plus1"
-          - "nodemcuv2-all-test"
-          - "nodemcuv2-fastled-test"
-          - "nodemcuv2-2g"
-          - "nodemcuv2-ir"
-          - "nodemcuv2-rs232"
-          - "avatto-bakeey-ir"
-          - "nodemcuv2-rf"
-          - "nodemcuv2-rf-cc1101"
-          - "nodemcuv2-somfy-cc1101"
-          - "manual-wifi-test"
-          - "nodemcuv2-mqtt-fw-test"
-          - "rf-wifi-gateway"
-          - "nodemcuv2-rf2"
-          - "nodemcuv2-rf2-cc1101"
-          - "nodemcuv2-pilight"
-          - "nodemcuv2-weatherstation"
-          - "sonoff-basic"
-          - "sonoff-basic-rfr3"
-          - "atmega-all-test"
-          - "uno-rf"
-          - "uno-fastled"
-          - "esp32dev-ble-datatest"
-          - "esp32s3-dev-c1-ble"
-          - "esp32c3-dev-m1-ble"
-          - "airm2m_core_esp32c3"
-          - "lolin_c3_mini"
-          - "thingpulse-espgateway"
-          - "theengs-bridge"
+
     runs-on: ubuntu-latest
     name: Build with PlatformIO
     steps:
@@ -97,7 +27,7 @@ jobs:
           ESP32_VERSION=$(grep 'esp32_platform\s*=' platformio.ini | cut -d'@' -f2 | tr -d '[:space:]')
           echo "ESP32_PLATFORM_VERSION=${ESP32_VERSION}" >> $GITHUB_ENV
       - name: Trigger framework installation
-        run: platformio run -e ttgo-lora32-v21
+        run: platformio run -e esp32dev-all-test
       - name: Replace libbtdm_app.a file
         run: cp lib/esp32-bt-lib/esp32/libbtdm_app.a $HOME/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/ld/libbtdm_app.a
       - name: Verify file replacement
