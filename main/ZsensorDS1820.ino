@@ -38,7 +38,7 @@ static uint8_t ds1820_resolution[OW_MAX_SENSORS];
 static String ds1820_type[OW_MAX_SENSORS];
 static String ds1820_addr[OW_MAX_SENSORS];
 
-void setupZsensorDS1820() {
+int setupZsensorDS1820() {
   Log.trace(F("DS1820: configured pin: %d for 1-wire bus" CR), DS1820_OWBUS_GPIO);
   ds1820.begin();
 
@@ -95,6 +95,7 @@ void setupZsensorDS1820() {
   // make requestTemperatures() non-blocking
   // we've to take that conversion is triggered some time before reading temperature values!
   ds1820.setWaitForConversion(false);
+  return numDevicesOnBus;
 }
 
 void pubOneWire_HADiscovery() {
@@ -150,13 +151,34 @@ void MeasureDS1820Temp() {
         } else if (DS1820_ALWAYS || current_temp[i] != persisted_temp[i]) {
           DS1820data["tempf"] = (float)DallasTemperature::toFahrenheit(current_temp[i]);
           DS1820data["tempc"] = (float)current_temp[i];
+          DS1820data["id"] = "Yaourt2";
+          DS1820data["TempCelsius"] = (float)current_temp[i];
+          DS1820data["Vbatt"] = 0;
 
           if (DS1820_DETAILS) {
             DS1820data["type"] = ds1820_type[i];
             DS1820data["res"] = String(ds1820_resolution[i]) + String("bit");
             DS1820data["addr"] = ds1820_addr[i];
           }
-          String origin = String(OW_TOPIC) + "/" + ds1820_addr[i];
+               //   String origin = String(OW_TOPIC) + "/" + ds1820_addr[i];
+
+          char out[200];
+          struct tm timeinfo;
+          if (!getLocalTime(&timeinfo)) {
+            Serial.println("Failed to obtain time");
+          }
+
+        sprintf( out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d",  timeinfo.tm_mday, timeinfo.tm_mon+1 , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
+       Serial.println(out);
+
+
+          DS1820data["Time"] =String( out);
+          DS1820data["name"] = DS1820data["id"];
+          DS1820data["id"] =  String("/Yaourt2") +  String("/History/") + String(out);
+
+   
+
+          String origin = String(OW_TOPIC) + "/Yaourt2/" + ds1820_addr[i] + "/" + out;
           DS1820data["origin"] = origin;
           handleJsonEnqueue(DS1820data);
           delay(10);

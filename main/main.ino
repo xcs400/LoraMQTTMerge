@@ -26,7 +26,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "User_config.h"
+#include <ListLib.h>
 
+
+ int nbsensorDS1820;
 // States of the gateway
 // Wm setup
 // Connected to MQTT
@@ -35,6 +38,8 @@
 // Deep sleep
 // Local OTA in progress
 // Remote OTA in progress
+
+List<std::string> idDeviceList; 
 
 // Macros and structure to enable the duplicates removing on the following gateways
 #if defined(ZgatewayRF) || defined(ZgatewayIR) || defined(ZgatewaySRFB) || defined(ZgatewayWeatherStation) || defined(ZgatewayRTL_433)
@@ -118,6 +123,10 @@ struct GfSun2000Data {};
 #if defined(ZgatewayRF) || defined(ZgatewayRF2) || defined(ZgatewayPilight) || defined(ZactuatorSomfy) || defined(ZgatewayRTL_433)
 #  include "config_RF.h"
 #endif
+
+#  ifdef ZMergeTemp
+#  include "config_MergeTemp.h"
+#  endif
 #ifdef ZgatewayWeatherStation
 #  include "config_WeatherStation.h"
 #endif
@@ -552,6 +561,7 @@ void emptyQueue() {}
 void pub(const char* topicori, const char* payload, bool retainFlag) {
   String topic = String(mqtt_topic) + String(gateway_name) + String(topicori);
   pubMQTT(topic.c_str(), payload, retainFlag);
+
 }
 
 /**
@@ -631,6 +641,10 @@ void pub(const char* topicori, JsonObject& data) {
 #endif
 }
 
+
+ void erasebMQTTtopic(const char* topic,  bool retainFlag) {
+client.publish( topic, ( uint8_t*)"{}", 2, retainFlag) ;
+ }
 /**
  * @brief Publish the payload on default MQTT topic
  *
@@ -672,13 +686,16 @@ void pubMQTT(const char* topic, const char* payload) {
  * @param payload the payload
  * @param retainFlag  true if retain the retain Flag
  */
+
+
 void pubMQTT(const char* topic, const char* payload, bool retainFlag) {
   if (client.connected()) {
     SendReceiveIndicatorON();
-    Log.trace(F("[ OMG->MQTT ] topic: %s msg: %s " CR), topic, payload);
-    client.publish(topic, payload, retainFlag);
+  //  Log.notice(F("[ OMG->MQTT ] topic: %s msg: %s " CR), topic, payload);
+     Log.notice(F("[ OMG->MQTT ] topic: %s  " CR), topic);
+   client.publish(topic, payload, retainFlag);
   } else {
-    Log.warning(F("Client not connected, aborting the publication" CR));
+    Log.notice(F("Client not connected, aborting the publication" CR));
   }
 }
 
@@ -873,10 +890,46 @@ void connectMQTT() {
 
     displayPrint("MQTT connected");
     Log.notice(F("Connected to broker" CR));
+
+  
+    configTime(0, 0, NTP_SERVER);
+    
+  char out[200];
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+  }
+
+  sprintf( out, "%d.%d.%d:%d.%d.%d",   1900+ timeinfo.tm_year, timeinfo.tm_mon , timeinfo.tm_mday , timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
+ Serial.println(out);
+
+
     failure_number_mqtt = 0;
     // Once connected, publish an announcement...
     pub(will_Topic, Gateway_AnnouncementMsg, will_Retain);
     //Subscribing to topic
+
+#ifdef ZMergeTemp
+char topicH[mqtt_topic_max_size];
+   strcpy(topicH, mqtt_topic);
+    strcat(topicH, gateway_name);
+
+ // if ( strcmp( gateway_name, "OMG_ESP32_LORA" ) ==0)
+ //      strcat(topicH, (char*)TOPICMERGETEMP); 
+   
+
+  if ( strcmp( gateway_name, "OMG_ESP32_LORA2") ==0)   // uniquement pour la carte non lora 
+       strcat(topicH, (char*)TOPICMERGETEMPYaourt2); 
+
+    Log.notice(F("\r\n ZMergeTemp" ));
+      Log.notice(F(topicH ));
+
+    if (client.subscribe(topicH)) {
+    Log.notice(F("\r\n ZMergeTemp ok sub" ));
+    }
+
+#endif
+
     char topic2[mqtt_topic_max_size];
     strcpy(topic2, mqtt_topic);
     strcat(topic2, gateway_name);
@@ -901,6 +954,9 @@ void connectMQTT() {
     if (mqtt_secure)
       Log.warning(F("failed, ssl error code=%d" CR), ((WiFiClientSecure*)eClient)->getLastSSLError());
 #endif
+
+
+
     ErrorIndicatorON();
     delayWithOTA(5000);
     ErrorIndicatorOFF();
@@ -931,7 +987,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // In order to republish this payload, a copy must be made
   // as the original payload buffer will be overwritten whilst
   // constructing the PUBLISH packet.
-  Log.trace(F("Hey I got a callback %s" CR), topic);
+  //Log.notice(F("Hey I got a callback %s" CR), topic);
   // Allocate the correct amount of memory for the payload copy
   byte* p = (byte*)malloc(length + 1);
   // Copy the payload to the new buffer
@@ -1195,12 +1251,18 @@ void setup() {
   setupCommonRF();
 #  endif
 #endif
+
+#if defined(ZMergeTemp)
+    setupMergeTemp ();
+    modules.add(ZMergeTemp);
+#  endif
+
 #ifdef ZsensorBME280
   setupZsensorBME280();
   modules.add(ZsensorBME280);
 #endif
 #ifdef ZsensorHTU21
-  setupZsensorHTU21();
+if ( setupZsensorHTU21())
   modules.add(ZsensorHTU21);
 #endif
 #ifdef ZsensorLM75
@@ -1314,8 +1376,10 @@ void setup() {
   modules.add(ZactuatorSomfy);
 #endif
 #ifdef ZsensorDS1820
-  setupZsensorDS1820();
+
+ nbsensorDS1820= setupZsensorDS1820();
   modules.add(ZsensorDS1820);
+
 #endif
 #ifdef ZsensorADC
   setupADC();
@@ -2047,6 +2111,13 @@ void loop() {
 #if defined(ZwebUI) && defined(ESP32)
     WebUILoop();
 #endif
+
+#  ifdef ZMergeTemp
+        LoopMergeTemp();
+#  endif
+
+
+
     if (client.loop()) { // MQTT client is still connected
       InfoIndicatorON();
       failure_number_ntwk = 0;
@@ -2072,6 +2143,9 @@ void loop() {
 #  ifdef ZgatewayBT
         stateBTMeasures(false);
 #  endif
+
+
+
 #  ifdef ZactuatorONOFF
         stateONOFFMeasures();
 #  endif
@@ -2524,6 +2598,7 @@ bool isAduplicateSignal(SIGNAL_SIZE_UL_ULL value) {
 #endif
 
 void receivingMQTT(char* topicOri, char* datacallback) {
+    
   StaticJsonDocument<JSON_MSG_BUFFER> jsonBuffer;
   JsonObject jsondata = jsonBuffer.to<JsonObject>();
   auto error = deserializeJson(jsonBuffer, datacallback);
@@ -2545,7 +2620,7 @@ void receivingMQTT(char* topicOri, char* datacallback) {
     // log the received json
     String buffer = "";
     serializeJson(jsondata, buffer);
-    Log.notice(F("[ MQTT->OMG ]: %s" CR), buffer.c_str());
+    Log.trace(F("[ MQTT->OMG ]: %s" CR), buffer.c_str());
 
 #ifdef ZgatewayPilight // ZgatewayPilight is only defined with json publishing due to its numerous parameters
     MQTTtoPilight(topicOri, jsondata);
@@ -2554,6 +2629,10 @@ void receivingMQTT(char* topicOri, char* datacallback) {
     MQTTtoRFset(topicOri, jsondata);
 #endif
 #if jsonReceiving
+#if defined(ZMergeTemp)
+    MQTTtoMERGETEMP (topicOri,jsondata);
+#  endif
+
 #  ifdef ZgatewayLORA
     MQTTtoLORA(topicOri, jsondata);
 #  endif

@@ -26,7 +26,7 @@
 #ifndef config_DS1820_h
 #define config_DS1820_h
 
-extern void setupZsensorDS1820();
+extern int setupZsensorDS1820();
 extern void DS1820toMQTT();
 extern void MeasureDS1820Temp();
 extern void pubOneWire_HADiscovery();
@@ -37,7 +37,7 @@ extern void pubOneWire_HADiscovery();
 #define OW_MAX_SENSORS 8 // query max. sensors on 1-wire bus
 #define DS1820_ALWAYS  true // if false only published current temperature if has changed from previous reading
 #ifndef DS1820_INTERVAL_SEC
-#  define DS1820_INTERVAL_SEC 60UL // time between DS1820 readings (seconds)
+#  define DS1820_INTERVAL_SEC 120UL // time between DS1820 readings (seconds)
 #endif
 #ifndef DS1820_RESOLUTION
 #  define DS1820_RESOLUTION 10 // conversion times: 9 bit (93.75 ms), 10 bit (187.5 ms), 11 bit (375 ms), 12 bit (750 ms)
@@ -50,7 +50,7 @@ extern void pubOneWire_HADiscovery();
 #  if defined(ESP8266)
 #    define DS1820_OWBUS_GPIO 2
 #  elif defined(ESP32)
-#    define DS1820_OWBUS_GPIO 2
+#    define DS1820_OWBUS_GPIO 32
 #  else
 #    define DS1820_OWBUS_GPIO 2
 #  endif

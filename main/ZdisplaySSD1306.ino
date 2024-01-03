@@ -92,7 +92,7 @@ void loopSSD1306() {
 
   long enough since the last message and display not being used and a queue message waiting
   */
-  if (jsonDisplay && displayState) {
+  if (0 &&   jsonDisplay && displayState) {  //removed pfn
     if (uptime() >= nextDisplayPage && uxSemaphoreGetCount(semaphoreOLEDOperation) && currentWebUIMessage && newSSD1306Message) {
       if (!Oled.displayPage(currentWebUIMessage)) {
         Log.warning(F("[ssd1306] displayPage failed: %s" CR), currentWebUIMessage->title);
@@ -102,6 +102,46 @@ void loopSSD1306() {
       newSSD1306Message = false;
     }
   }
+
+static int cnt=0;
+cnt++;
+  if (xSemaphoreTake(semaphoreOLEDOperation, pdMS_TO_TICKS(30000)) == pdTRUE) {
+
+  char out[200];
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+  }
+   sprintf( out, "%d/%d/%d:%d.%d.%d",  timeinfo.tm_mday, timeinfo.tm_mon , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
+   // Serial.println(out);
+
+
+
+   Oled.display->setColor(BLACK);
+   Oled.display->fillRect(0, 0, OLED_WIDTH, 15);
+    Oled.display->display();
+
+   Oled.display->setColor(WHITE);    
+   Oled.display->drawString(0, 0, (char*)String(cnt).c_str());
+   Oled.display->drawString(30, 0, out);
+
+   Oled.display->display();
+   Oled.display->setColor(WHITE);
+    xSemaphoreGive(semaphoreOLEDOperation);
+  }
+
+
+
+
+if (uptime() > nextDisplayPage  )
+  {
+   nextDisplayPage = uptime() + DISPLAY_PAGE_INTERVAL;
+   Oled.fad-=10;
+   if (Oled.fad < 0 )
+     Oled.fad=5;
+   Oled.display->setBrightness( Oled.fad );
+  }
+
   /*
   Display logo if it has been more than DISPLAY_PAGE_INTERVAL
   */
@@ -257,6 +297,8 @@ bool SSD1306Config_load() {
 Display three lines of text on display, scroll if needed
 */
 void ssd1306Print(char* line1, char* line2, char* line3) {
+  Oled.fad=255;
+
   Oled.println(line1);
   Oled.println(line2);
   Oled.println(line3);
@@ -267,6 +309,7 @@ void ssd1306Print(char* line1, char* line2, char* line3) {
 Display two lines of text on display, scroll if needed
 */
 void ssd1306Print(char* line1, char* line2) {
+  Oled.fad=255;
   Oled.println(line1);
   Oled.println(line2);
   delay(2000);
@@ -276,9 +319,16 @@ void ssd1306Print(char* line1, char* line2) {
 Display single line of text on display, scroll if needed
 */
 void ssd1306Print(char* line1) {
+  Oled.fad=255;
   Oled.println(line1);
   delay(2000);
 }
+void displaysetFont(const uint8_t *font) {
+
+   Oled.display->setFont(font);
+
+}
+
 
 // This pattern was borrowed from HardwareSerial and modified to support the ssd1306 display
 

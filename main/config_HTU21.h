@@ -38,11 +38,11 @@
 #ifndef config_HTU21_h
 #define config_HTU21_h
 
-extern void setupZsensorHTU21();
+extern int setupZsensorHTU21();
 extern void MeasureTempHum();
 
 #define htu21_always            true // if false when the current value of the parameter is the same as previous one don't send it by MQTT
-#define TimeBetweenReadinghtu21 30000
+#define TimeBetweenReadinghtu21 120000
 
 /*----------------------------USER PARAMETERS-----------------------------*/
 /*-------------DEFINE YOUR MQTT PARAMETERS BELOW----------------*/
@@ -50,8 +50,8 @@ extern void MeasureTempHum();
 
 #if defined(ESP32)
 #  if !defined(I2C_SDA) || !defined(I2C_SCL)
-#    define I2C_SDA 16
-#    define I2C_SCL 0
+#    define I2C_SDA 21  //16
+#    define I2C_SCL 22  //0
 #  endif
 #endif
 

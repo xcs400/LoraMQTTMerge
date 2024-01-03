@@ -66,7 +66,7 @@
 #endif
 
 #ifndef DISPLAY_IDLE_LOGO
-#  define DISPLAY_IDLE_LOGO true // Display the OMG logo when idle
+#  define DISPLAY_IDLE_LOGO false // Display the OMG logo when idle
 #endif
 
 #ifndef DISPLAY_FLIP
@@ -121,6 +121,7 @@ extern String stateSSD1306Display();
 void ssd1306Print(char*, char*, char*);
 void ssd1306Print(char*, char*);
 void ssd1306Print(char*);
+void displaysetFont(const uint8_t *font);
 
 /*-------------------End of Global Variables----------------------*/
 
@@ -134,6 +135,8 @@ public:
   boolean displayPage(webUIQueueMessage*);
 
   SSD1306Wire* display;
+  
+  int fad;
 
   int available(void); // Dummy functions
   int peek(void); // Dummy functions

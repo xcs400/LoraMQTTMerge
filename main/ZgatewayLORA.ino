@@ -32,13 +32,14 @@
 #  include <LoRa.h>
 #  include <SPI.h>
 #  include <Wire.h>
+//#  include <ListLib.h>
 
 #  define WIPHONE_MESSAGE_MAGIC   0x6c6d
 #  define WIPHONE_MESSAGE_MIN_LEN sizeof(wiphone_message) - WIPHONE_MAX_MESSAGE_LEN
 #  define WIPHONE_MAX_MESSAGE_LEN 230
 
 LORAConfig_s LORAConfig;
-
+//extern List<std::string> idDeviceList; 
 #  ifdef ZmqttDiscovery
 SemaphoreHandle_t semaphorecreateOrUpdateDeviceLORA;
 std::vector<LORAdevice*> LORAdevices;
@@ -389,11 +390,14 @@ void setupLORA() {
 }
 
 void LORAtoMQTT() {
+  
   int packetSize = LoRa.parsePacket();
-  if (packetSize) {
+  if (packetSize) { 
     StaticJsonDocument<JSON_MSG_BUFFER> LORAdataBuffer;
     JsonObject LORAdata = LORAdataBuffer.to<JsonObject>();
-    Log.trace(F("Rcv. LORA" CR));
+    Log.notice(F("Rcv. LORA" CR));
+
+ 
 #  ifdef ESP32
     String taskMessage = "LORA Task running on core ";
     taskMessage = taskMessage + xPortGetCoreID();
@@ -415,7 +419,7 @@ void LORAtoMQTT() {
       _WiPhoneToMQTT(packet, LORAdata);
     } else if (binary) {
       if (LORAConfig.onlyKnown) {
-        Log.trace(F("Ignoring non identifiable packet" CR));
+        Log.notice(F("Ignoring non identifiable packet" CR));
         return;
       }
       // We have non-ascii data: create hex string of the data
@@ -425,15 +429,118 @@ void LORAtoMQTT() {
       hex[packetSize * 2] = 0;
 
       LORAdata["hex"] = hex;
+return ;   //do nothing
+
     } else {
       // ascii payload
       std::string packetStrStd = (char*)packet;
+      std::string rsii = "rssi:"+ std::to_string ((int)LoRa.packetRssi());
+      std::string pferror = "pferror:"+ std::to_string ( (float)LoRa.packetFrequencyError() );
+
+   
       auto error = deserializeJson(LORAdataBuffer, packetStrStd);
       if (error) {
         Log.error(F("LORA packet deserialization failed: %s, buffer capacity: %u" CR), error.c_str(), LORAdataBuffer.capacity());
       }
     }
 
+
+ displaysetFont(ArialMT_Plain_10);
+ 
+ if (LORAdata.containsKey("model")) 
+  {
+      String model  =   LORAdata["model"];
+ //   displayPrint( (char*) ((std::string) "model:" + model).c_str()) ;
+  }
+
+ if (LORAdata.containsKey("id")) 
+  {
+    if (swichtid_signal==1)   // declenche swich id mergetemp  sur reception message
+       swichtid_signal=2;
+
+    std::string id = LORAdata["id"];
+    displayPrint( (char*) ((std::string) "ID:" + id).c_str()) ;
+   
+   if (!idDeviceList.Contains(id)  )
+    { 
+      Log.notice(F(":add %s to  idDeviceList" CR), id.c_str());
+      idDeviceList.Add(id);
+    }
+  }
+
+ if (LORAdata.containsKey("Charge%")) 
+  {  std::string Charge = LORAdata["Charge%"];
+    std::string Vbatt = LORAdata["Vbatt"];
+     displayPrint( (char*)((std::string) "BATT:" + Charge +(std::string)"%" +  (std::string) " V:" + Vbatt+ "mV" ).c_str()) ;
+  }
+
+ if (LORAdata.containsKey("TempCelsius")) 
+  {
+    std::string TempCelsius= LORAdata["TempCelsius"];
+   displaysetFont(ArialMT_Plain_24);
+    displayPrint( (char*)  ((std::string) "Temperature:" + TempCelsius).c_str()) ;
+  }
+
+
+  char out[200];
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+  }
+
+ sprintf( out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d",  timeinfo.tm_mday, timeinfo.tm_mon+1 , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
+ Serial.println(out);
+
+
+/*
+#define SIZETSTOR 60000
+static char  stor[SIZETSTOR];
+static int Currentp_storage=0;
+
+ if (LORAdata.containsKey("id") &&   LORAdata.containsKey("TempCelsius")) 
+  {
+  std::string id = LORAdata["id"];
+  std::string Charge = LORAdata["Charge%"];
+  std::string TempCelsius= LORAdata["TempCelsius"];
+
+    std::string jso= (std::string) "{d:'"  + (std::string)out +  (std::string)"',id:'" + id + (std::string) "',B:" + Charge  + (std::string)",T:" + TempCelsius  + (std::string)"}";
+
+    if (Currentp_storage ==0 )
+          {  strcpy( stor,(char*) jso.c_str());
+            Currentp_storage+= jso.length();
+          }
+    else
+        if ( Currentp_storage !=0   &&  Currentp_storage+ jso.length() < SIZETSTOR - 100)
+              {
+                stor[Currentp_storage]= ',' ;  // ajout , 
+                strcpy( &stor[Currentp_storage+1], (char*) jso.c_str() );
+                Currentp_storage+= jso.length()+1;
+              }
+            else
+              Serial.println( "\r\n ca deborde !!"  ); 
+
+  if (Currentp_storage>=  SIZETSTOR-100)
+      {
+        int y=0;
+        for ( ; y< SIZETSTOR ; y++)
+          if ( stor[y] == ',')
+              break;
+      memmove( stor, &stor[y+1], SIZETSTOR-y-1 ); 
+      Currentp_storage-= (y+1);
+      if (Currentp_storage<0)
+          Currentp_storage=0;
+      }
+
+   // Serial.println( stor  ); 
+    }
+ */
+  //  LORAdata["History"]=(std::string)"[" + stor+(std::string)"]" ;
+  std::string sensor = LORAdata["id"];
+
+    LORAdata["name"]=LORAdata["id"];
+    LORAdata["id"]= sensor+(std::string)"/History/"+out;
+    LORAdata["Charge"]=LORAdata["Charge%"];
+    LORAdata["Time"]=    out;
     LORAdata["rssi"] = (int)LoRa.packetRssi();
     LORAdata["snr"] = (float)LoRa.packetSnr();
     LORAdata["pferror"] = (float)LoRa.packetFrequencyError();
@@ -455,17 +562,20 @@ void LORAtoMQTT() {
     }
     handleJsonEnqueue(LORAdata);
     if (repeatLORAwMQTT) {
-      Log.trace(F("Pub LORA for rpt" CR));
+      Log.notice(F("Pub LORA for rpt" CR));
       LORAdata["origin"] = subjectMQTTtoLORA;
       handleJsonEnqueue(LORAdata);
     }
+ 
   }
+
+
 }
 
 #  if jsonReceiving
 void MQTTtoLORA(char* topicOri, JsonObject& LORAdata) { // json object decoding
-  if (cmpToMainTopic(topicOri, subjectMQTTtoLORA)) {
-    Log.trace(F("MQTTtoLORA json" CR));
+   if (cmpToMainTopic(topicOri, subjectMQTTtoLORA)) {
+    Log.notice(F("commands MQTTtoLORA json" CR));
     const char* message = LORAdata["message"];
     const char* hex = LORAdata["hex"];
     LORAConfig_fromJson(LORAdata);
@@ -478,14 +588,14 @@ void MQTTtoLORA(char* topicOri, JsonObject& LORAdata) { // json object decoding
         // We have hex data: create convert to binary
         byte raw[strlen(hex) / 2];
         _hexToRaw(hex, raw, sizeof(raw));
-        LoRa.write((uint8_t*)raw, sizeof(raw));
+            LoRa.write((uint8_t*)raw, sizeof(raw));
       } else {
         // ascii payload
-        LoRa.print(message);
+            LoRa.print(message);
       }
 
       LoRa.endPacket();
-      Log.trace(F("MQTTtoLORA OK" CR));
+      Log.notice(F("MQTTtoLORA OK" CR));
       // we acknowledge the sending by publishing the value to an acknowledgement topic, for the moment even if it is a signal repetition we acknowledge also
       pub(subjectGTWLORAtoMQTT, LORAdata);
     } else {
@@ -512,7 +622,7 @@ void MQTTtoLORA(char* topicOri, JsonObject& LORAdata) { // json object decoding
     LORAConfig_fromJson(LORAdata);
     stateLORAMeasures();
   }
-}
+ }
 #  endif
 #  if simpleReceiving
 void MQTTtoLORA(char* topicOri, char* LORAarray) { // json object decoding

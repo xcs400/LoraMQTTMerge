@@ -46,20 +46,33 @@
 
 //Time used to wait for an interval before resending measured values
 unsigned long timehtu21 = 0;
+int counterror = 0;
 
 //Global sensor object
 HTU21D htuSensor;
 
-void setupZsensorHTU21() {
+int setupZsensorHTU21() {
   delay(10); // Gives the Sensor enough time to turn on
   Log.notice(F("HTU21 Initialized - begin()" CR));
 
 #  if defined(ESP32)
   Wire.begin(I2C_SDA, I2C_SCL);
   htuSensor.begin(Wire);
+
+  float HtuTempC = htuSensor.readTemperature();
+  float HtuHum = htuSensor.readHumidity();
+
+  if (HtuTempC >= 998 || HtuHum >= 998) {
+    Log.error(F("Failed to read from sensor HTU21! ignore" CR));
+    counterror = 1;
+    return 0;
+  }
+
 #  else
   htuSensor.begin();
 #  endif
+
+  return 1;
 }
 
 void MeasureTempHum() {
@@ -70,13 +83,20 @@ void MeasureTempHum() {
     static float persisted_htu_tempc;
     static float persisted_htu_hum;
 
-    float HtuTempC = htuSensor.readTemperature();
-    float HtuHum = htuSensor.readHumidity();
+    float HtuTempC;
+    float HtuHum;
 
-    if (HtuTempC >= 998 || HtuHum >= 998) {
-      Log.error(F("Failed to read from sensor HTU21!" CR));
+    if (counterror == 0) {
+      HtuTempC = htuSensor.readTemperature();
+      HtuHum = htuSensor.readHumidity();
+
+      if (HtuTempC >= 998 || HtuHum >= 998) {
+        Log.error(F("Failed to read from sensor HTU21!" CR));
+        return;
+      }
+
+    } else
       return;
-    }
 
     // Check if reads failed and exit early (to try again).
     if (isnan(HtuTempC) || isnan(HtuHum)) {
@@ -90,6 +110,11 @@ void MeasureTempHum() {
         float HtuTempF = (HtuTempC * 1.8) + 32;
         HTU21data["tempc"] = (float)HtuTempC;
         HTU21data["tempf"] = (float)HtuTempF;
+        HTU21data["id"] = "Yaourt2";
+        HTU21data["TempCelsius"] = (float)HtuTempC;
+        ;
+        HTU21data["Vbatt"] = (float)HtuHum;
+
       } else {
         Log.notice(F("Same Temp. Don't send it" CR));
       }
@@ -100,7 +125,23 @@ void MeasureTempHum() {
       } else {
         Log.notice(F("Same Humidity. Don't send it" CR));
       }
-      HTU21data["origin"] = HTUTOPIC;
+
+      char out[200];
+      struct tm timeinfo;
+      if (!getLocalTime(&timeinfo)) {
+        Serial.println("Failed to obtain time");
+      }
+      sprintf(out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d", timeinfo.tm_mday, timeinfo.tm_mon + 1, 1900 + timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      Serial.println(out);
+
+      HTU21data["Time"] = String(out);
+      HTU21data["name"] = HTU21data["id"];
+      HTU21data["id"] = String("/Yaourt2") + String("/History/") + String(out);
+
+      //    String origin = String(HTUTOPIC) + "/Yaourt2/"  + out;
+      String origin = String("/OneWiretoMQTT/ds1820") + "/Yaourt2/" + out;
+
+      HTU21data["origin"] = origin; // HTUTOPIC;
       handleJsonEnqueue(HTU21data);
     }
     persisted_htu_tempc = HtuTempC;

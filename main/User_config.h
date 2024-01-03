@@ -125,10 +125,10 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  define WifiManager_ssid Gateway_Name //this is the network name of the initial setup access point
 #endif
 #ifndef WifiManager_ConfigPortalTimeOut
-#  define WifiManager_ConfigPortalTimeOut 240 //time in seconds for the setup portal to stay open, default 240s
+#  define WifiManager_ConfigPortalTimeOut 90 //time in seconds for the setup portal to stay open, default 240s
 #endif
 #ifndef WiFi_TimeOut
-#  define WiFi_TimeOut 5
+#  define WiFi_TimeOut 10
 #endif
 #ifndef WM_DEBUG_LEVEL
 #  define WM_DEBUG_LEVEL 1 // valid values are: DEBUG_ERROR = 0, DEBUG_NOTIFY = 1, DEBUG_VERBOSE = 2, DEBUG_DEV = 3, DEBUG_MAX = 4
@@ -137,7 +137,7 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 
 /*-------------DEFINE YOUR ADVANCED NETWORK PARAMETERS BELOW----------------*/
 //#define MDNS_SD //uncomment if you  want to use mDNS for discovering automatically your IP server, please note that mDNS with ESP32 can cause the BLE to not work
-#define maxConnectionRetryNetwork 5 //maximum Wifi connection attempts with existing credential at start (used to bypass ESP32 issue on wifi connect)
+#define maxConnectionRetryNetwork 20 //maximum Wifi connection attempts with existing credential at start (used to bypass ESP32 issue on wifi connect)
 #define maxRetryWatchDog          11 //maximum Wifi or MQTT re-connection attempts before restarting
 
 //set minimum quality of signal so it ignores AP's under that quality
@@ -155,7 +155,7 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #      endif
 #      define mqtt_max_packet_size 2560
 #    else
-#      define mqtt_max_packet_size 1024
+#      define mqtt_max_packet_size 2560
 #    endif
 #  endif
 #else
@@ -165,13 +165,13 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #endif
 
 #ifndef MQTT_USER
-#  define MQTT_USER "your_username"
+#  define MQTT_USER ""
 #endif
 #ifndef MQTT_PASS
-#  define MQTT_PASS "your_password"
+#  define MQTT_PASS ""
 #endif
 #ifndef MQTT_SERVER
-#  define MQTT_SERVER "192.168.1.17"
+#  define MQTT_SERVER "3.141.96.53"
 #endif
 #ifndef MQTT_PORT
 #  define MQTT_PORT "1883"
@@ -370,7 +370,7 @@ int lowpowermode = DEFAULT_LOW_POWER_MODE;
 #  define will_Retain true
 #endif
 #ifndef sensor_Retain
-#  define sensor_Retain false
+#  define sensor_Retain true
 #endif
 #ifndef will_Message
 #  define will_Message "offline"
@@ -794,8 +794,16 @@ void storeSignalValue(SIGNAL_SIZE_UL_ULL);
 #endif
 
 // Origin topics
-#define subjectBTtoMQTT "/BTtoMQTT"
+//#define subjectBTtoMQTT "/BTtoMQTT"
 
+#define ZMergeTemp "MERGETEMP"
+#define subjectBTMERGETEMP "/History"
+#define TOPICMERGETEMP "/LORAtoMQTT/Yaourt1/#"                   // 1    0
+#define TOPICMERGETEMPYaourt2 "/OneWiretoMQTT/ds1820/Yaourt2/#"           // 0    1
+
+#define ZsensorDS1820 "DS1820"                                     //  0   1
+
+#define  ZsensorHTU21 "HTU21"
 #define convertTemp_CtoF(c) ((c * 1.8) + 32)
 #define convertTemp_FtoC(f) ((f - 32) * 5 / 9)
 
