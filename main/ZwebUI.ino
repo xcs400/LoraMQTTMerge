@@ -787,7 +787,7 @@ void handleMQ() {
         String topic = String(mqtt_topic) + String(gateway_name) + String(subjectMQTTtoSYSset);
         String output;
         serializeJson(WEBtoSYS, output);
-        Log.notice(F("[WebUI] MQTTtoSYS %s" CR), output.c_str());
+        Log.notice(F("[WebUI] ici MQTTtoSYS %s  %s" CR), output.c_str(), (char*)topic.c_str());
         MQTTtoSYS((char*)topic.c_str(), WEBtoSYS);
         return;
       } else {

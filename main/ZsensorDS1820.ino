@@ -151,7 +151,9 @@ void MeasureDS1820Temp() {
         } else if (DS1820_ALWAYS || current_temp[i] != persisted_temp[i]) {
           DS1820data["tempf"] = (float)DallasTemperature::toFahrenheit(current_temp[i]);
           DS1820data["tempc"] = (float)current_temp[i];
-          DS1820data["id"] = "Yaourt2";
+
+          String sensname = ds1820_addr[i];
+          DS1820data["id"] = sensname;
           DS1820data["TempCelsius"] = (float)current_temp[i];
           DS1820data["Vbatt"] = 0;
 
@@ -160,7 +162,6 @@ void MeasureDS1820Temp() {
             DS1820data["res"] = String(ds1820_resolution[i]) + String("bit");
             DS1820data["addr"] = ds1820_addr[i];
           }
-               //   String origin = String(OW_TOPIC) + "/" + ds1820_addr[i];
 
           char out[200];
           struct tm timeinfo;
@@ -168,18 +169,24 @@ void MeasureDS1820Temp() {
             Serial.println("Failed to obtain time");
           }
 
-        sprintf( out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d",  timeinfo.tm_mday, timeinfo.tm_mon+1 , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
-       Serial.println(out);
+          sprintf(out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d", timeinfo.tm_mday, timeinfo.tm_mon + 1, 1900 + timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+          Serial.println(out);
 
-
-          DS1820data["Time"] =String( out);
+          DS1820data["Time"] = String(out);
           DS1820data["name"] = DS1820data["id"];
-          DS1820data["id"] =  String("/Yaourt2") +  String("/History/") + String(out);
+          DS1820data["id"] = sensname + String("/History/") + String(out);
 
-   
+          String topicn = String(OW_TOPIC) + "/";
+          String origin = topicn + sensname + String("/History/") + String(out);
 
-          String origin = String(OW_TOPIC) + "/Yaourt2/" + ds1820_addr[i] + "/" + out;
           DS1820data["origin"] = origin;
+          if (swichtid_signal == 1) // declenche swich id mergetemp  sur reception message
+            swichtid_signal = 2;
+          if (!idDeviceList.Contains((topicn + sensname).c_str())) {
+            Log.notice(F(":add %s to  idDeviceList" CR), (topicn + sensname).c_str());
+            idDeviceList.Add((topicn + sensname).c_str());
+          }
+
           handleJsonEnqueue(DS1820data);
           delay(10);
 #  if defined(DEEP_SLEEP_IN_US) || defined(ESP32_EXT0_WAKE_PIN)

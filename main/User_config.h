@@ -171,7 +171,8 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  define MQTT_PASS ""
 #endif
 #ifndef MQTT_SERVER
-#  define MQTT_SERVER "3.141.96.53"
+#  define MQTT_SERVER "broker.emqx.io"
+#  define MQTT_SERVERyyyyyy "811bda171b64435d9323de3dac2d9bbf.s1.eu.hivemq.cloud"
 #endif
 #ifndef MQTT_PORT
 #  define MQTT_PORT "1883"
@@ -196,7 +197,25 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 // The certificate must be in PEM ascii format
 const char* certificate PROGMEM = R"EOF("
 -----BEGIN CERTIFICATE-----
-...
+-----BEGIN CERTIFICATE-----
+MIIDjTCCAnWgAwIBAgIEGo9YeDANBgkqhkiG9w0BAQsFADBbMScwJQYDVQQDDB5SZWdlcnkgU2Vs
+Zi1TaWduZWQgQ2VydGlmaWNhdGUxIzAhBgNVBAoMGlJlZ2VyeSwgaHR0cHM6Ly9yZWdlcnkuY29t
+MQswCQYDVQQGEwJVQTAgFw0yNDAxMDkwMDAwMDBaGA8yMTI0MDEwOTIzNTExOFowTzEbMBkGA1UE
+AwwSczEuZXUuaGl2ZW1xLmNsb3VkMSMwIQYDVQQKDBpSZWdlcnksIGh0dHBzOi8vcmVnZXJ5LmNv
+bTELMAkGA1UEBhMCVUEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCMiMZ8syL0ocxl
+LmE47yX+zMdSwZQs2aJxPrXWjfgIb9Ohty9xgxlsmtEvi566NbQLqh9pkK45XL9xocs+hpet4+q5
++NI8ouO0aB7Hu77JE1px19ZLvcQzPa1eZpAKzml4ExrC7/SdwVazQOYfjhhPAE2rO9JKtkAR9/NF
+t7j81upvWx7e5wzNuDDzijeOB7HanYJ/ZFGbtdU4riZVGsotF1JdI174egnMzFmL5l77CWJ+R3pY
+Bgy/u+2HHkaka9UtHwouP2Mpl8CTTHlrHdY8iYM2Lfszl9bSmNODwKp6uM47nfWj+aNQ7Rw8tqaR
+cJL7pLXv5zK27e9wDkelsjbJAgMBAAGjYzBhMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQD
+AgGGMB0GA1UdDgQWBBRsfHe1yDIaNaqYxw/k0oc72jvnbDAfBgNVHSMEGDAWgBRsfHe1yDIaNaqY
+xw/k0oc72jvnbDANBgkqhkiG9w0BAQsFAAOCAQEAWpfAsnEBD7G+zgidT0G0uKZ0juzX1EvaB9jN
+R4UOT4lU8VXjnzB0s0PoAtzvfz6dFS+RlGp5tJiNvEXG8Ai4XJlKS5m4Sj3o8LqP0Tktx65GYf6h
+1MOmNbsCF2kE4XGzQigvGk3GERU2PDRE5dVNHpHievQn8nZZpq1Nj2Toq89kt8AQIEJSyH+1fH7f
+5h7PnPxh5TGl88Ext0F3gm6QV4xJaK0LPMdrGOnz/VPx2ACnXaWZQh9pxV1ztWz6akNpES4wFTMP
+3Gr42NB3mV1M1+6CPJTtwO4Gw4boirceKmaoEP7kwfI04RVhL0JCD8Masl5LqFJF/aAdCBoaRZUg
+ug==
+-----END CERTIFICATE-----
 -----END CERTIFICATE-----
 ")EOF";
 
@@ -803,7 +822,7 @@ void storeSignalValue(SIGNAL_SIZE_UL_ULL);
 
 #define ZsensorDS1820 "DS1820"                                     //  0   1
 
-#define  ZsensorHTU21 "HTU21"
+//#define  ZsensorHTU21 "HTU21"
 #define convertTemp_CtoF(c) ((c * 1.8) + 32)
 #define convertTemp_FtoC(f) ((f - 32) * 5 / 9)
 

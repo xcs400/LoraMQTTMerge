@@ -106,11 +106,14 @@ void MeasureTempHum() {
       StaticJsonDocument<JSON_MSG_BUFFER> HTU21dataBuffer;
       JsonObject HTU21data = HTU21dataBuffer.to<JsonObject>();
       // Generate Temperature in degrees C
+            String sensname="Yaourt2";
       if (HtuTempC != persisted_htu_tempc || htu21_always) {
         float HtuTempF = (HtuTempC * 1.8) + 32;
         HTU21data["tempc"] = (float)HtuTempC;
         HTU21data["tempf"] = (float)HtuTempF;
-        HTU21data["id"] = "Yaourt2";
+
+  
+        HTU21data["id"] = sensname; 
         HTU21data["TempCelsius"] = (float)HtuTempC;
         ;
         HTU21data["Vbatt"] = (float)HtuHum;
@@ -131,17 +134,27 @@ void MeasureTempHum() {
       if (!getLocalTime(&timeinfo)) {
         Serial.println("Failed to obtain time");
       }
-      sprintf(out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d", timeinfo.tm_mday, timeinfo.tm_mon + 1, 1900 + timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      sprintf(out, "%.2d-%.2d-%.2d/%.2d-%.2d-%.2d", timeinfo.tm_mday, timeinfo.tm_mon + 1, 1900 + timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
       Serial.println(out);
 
       HTU21data["Time"] = String(out);
       HTU21data["name"] = HTU21data["id"];
-      HTU21data["id"] = String("/Yaourt2") + String("/History/") + String(out);
+      HTU21data["id"] = String("/") + sensname + String("/History/") + String(out);
 
-      //    String origin = String(HTUTOPIC) + "/Yaourt2/"  + out;
-      String origin = String("/OneWiretoMQTT/ds1820") + "/Yaourt2/" + out;
+   
+      String topicn =  String("/OneWiretoMQTT/ds1820/");
+      String origin = topicn +  sensname + "/History/" + String(out);
 
-      HTU21data["origin"] = origin; // HTUTOPIC;
+      HTU21data["origin"] = origin;  //HTUTOPIC;
+
+    if (swichtid_signal==1)   // declenche swich id mergetemp  sur reception message
+       swichtid_signal=2;
+    if (!idDeviceList.Contains( (topicn + sensname).c_str() )  )
+        { 
+          Log.notice(F(":add %s to  idDeviceList" CR), (topicn + sensname).c_str() );
+          idDeviceList.Add((topicn + sensname).c_str() );
+        }
+
       handleJsonEnqueue(HTU21data);
     }
     persisted_htu_tempc = HtuTempC;

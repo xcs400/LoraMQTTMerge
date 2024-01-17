@@ -50,7 +50,7 @@ extern void pubOneWire_HADiscovery();
 #  if defined(ESP8266)
 #    define DS1820_OWBUS_GPIO 2
 #  elif defined(ESP32)
-#    define DS1820_OWBUS_GPIO 32
+#    define DS1820_OWBUS_GPIO 14
 #  else
 #    define DS1820_OWBUS_GPIO 2
 #  endif

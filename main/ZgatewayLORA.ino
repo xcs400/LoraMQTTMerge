@@ -461,10 +461,11 @@ return ;   //do nothing
     std::string id = LORAdata["id"];
     displayPrint( (char*) ((std::string) "ID:" + id).c_str()) ;
    
-   if (!idDeviceList.Contains(id)  )
+   std::string fulltopname=  (std::string)subjectLORAtoMQTT+  (std::string) "/"+ id;
+   if (!idDeviceList.Contains(fulltopname)  )
     { 
-      Log.notice(F(":add %s to  idDeviceList" CR), id.c_str());
-      idDeviceList.Add(id);
+      Log.notice(F(":add %s to  idDeviceList" CR),   fulltopname.c_str());
+      idDeviceList.Add(  fulltopname );
     }
   }
 
@@ -488,7 +489,7 @@ return ;   //do nothing
     Serial.println("Failed to obtain time");
   }
 
- sprintf( out, "%d-%.2d-%.2d/%.2d-%.2d-%.2d",  timeinfo.tm_mday, timeinfo.tm_mon+1 , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
+ sprintf( out, "%.2d-%.2d-%.2d/%.2d-%.2d-%.2d",  timeinfo.tm_mday, timeinfo.tm_mon+1 , 1900+ timeinfo.tm_year,  timeinfo.tm_hour , timeinfo.tm_min, timeinfo.tm_sec );
  Serial.println(out);
 
 

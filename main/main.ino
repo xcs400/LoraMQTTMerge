@@ -892,8 +892,11 @@ void connectMQTT() {
     Log.notice(F("Connected to broker" CR));
 
   
-    configTime(0, 0, NTP_SERVER);
-    
+  //  configTime(0, 0, NTP_SERVER);
+ configTzTime("CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00", NTP_SERVER);
+
+
+
   char out[200];
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
@@ -910,22 +913,17 @@ void connectMQTT() {
     //Subscribing to topic
 
 #ifdef ZMergeTemp
+
 char topicH[mqtt_topic_max_size];
    strcpy(topicH, mqtt_topic);
-    strcat(topicH, gateway_name);
-
- // if ( strcmp( gateway_name, "OMG_ESP32_LORA" ) ==0)
- //      strcat(topicH, (char*)TOPICMERGETEMP); 
-   
-
-  if ( strcmp( gateway_name, "OMG_ESP32_LORA2") ==0)   // uniquement pour la carte non lora 
-       strcat(topicH, (char*)TOPICMERGETEMPYaourt2); 
-
+   strcat(topicH, gateway_name);
+   strcat(topicH, "/MERGEtoMQTT/#");
+  
     Log.notice(F("\r\n ZMergeTemp" ));
       Log.notice(F(topicH ));
 
     if (client.subscribe(topicH)) {
-    Log.notice(F("\r\n ZMergeTemp ok sub" ));
+    Log.notice(F("\r\n ZMergeTemp /MERGEtoMQTT/#  subscribe ok" ));
     }
 
 #endif
@@ -1726,6 +1724,9 @@ void checkButton() {}
 void saveConfig() {
   Log.trace(F("saving config" CR));
   DynamicJsonDocument json(512 + ota_server_cert.length() + mqtt_cert.length());
+
+    Log.trace(F("saving mqtt_server:" CR), mqtt_server);
+
   json["mqtt_server"] = mqtt_server;
   json["mqtt_port"] = mqtt_port;
   json["mqtt_user"] = mqtt_user;

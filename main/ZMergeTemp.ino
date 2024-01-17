@@ -139,27 +139,26 @@ void fechtSubId(std::string id) {
   char topicH[mqtt_topic_max_size];
   strcpy(topicH, mqtt_topic);
   strcat(topicH, gateway_name);
-  strcat(topicH, (char*)"/LORAtoMQTT/");
-  strcat(topicH, id.c_str());
+  strcat(topicH, id.c_str() );  // /CLIMAtoMQTT/htu/yaourt1   /LORAtoMQTT  /OneWiretoMQTT/ds1820
   strcat(topicH, (char*)"/#");
 
   if (client.subscribe(topicH)) {
     Log.notice(F(" subscrib : %s" CR), topicH);
   }
+  std::string payload = "{id:\"" + id  + "\"}"; // ajouyte sensor name
+ std::string  sensorname =  strrchr( id.c_str(), '/' ) +1 ;
 
-    std::string payload= "{id:\"" + id + "\"}" ;                               // ajouyte sensor name
-    std::string topic = (std::string) "/MERGEtoMQTT/Sensor/" + id.c_str();
-    Log.notice(F(" publiSensor %s : %s " CR), topic.c_str(), payload.c_str());
-    pub(topic.c_str(), payload.c_str(), 1);
-
+  std::string topic = (std::string) "/MERGEtoMQTT/Sensor/" +sensorname.c_str();
+  Log.notice(F(" publiSensor %s : %s " CR), topic.c_str(), payload.c_str());
+  pub(topic.c_str(), payload.c_str(), 1);
 }
 
 void unSubId(std::string id) {
+
   char topicH[mqtt_topic_max_size];
   strcpy(topicH, mqtt_topic);
   strcat(topicH, gateway_name);
-  strcat(topicH, (char*)"/LORAtoMQTT/");
-  strcat(topicH, id.c_str());
+  strcat(topicH, id.c_str() );
   strcat(topicH, (char*)"/#");
 
   if (client.unsubscribe(topicH)) {
@@ -167,27 +166,28 @@ void unSubId(std::string id) {
   }
 }
 
-int currentid=0;
+int currentid = 0;
 void LoopMergeTemp() {
   std::string currentTopic;
   switch (stateid) {
     case 0:
       if (stateid < idDeviceList.Count()) {
-        fechtSubId(  idDeviceList[0]);
-        currentid=0;
+        fechtSubId(idDeviceList[0]);
+        currentid = 0;
         stateid++;
       }
       break;
     default:
       if (swichtid_signal == 2) {
-        swichtid_signal=0;
-         pos = 0;
+        swichtid_signal = 0;
+        pos = 0;
+        minpos = 0xffffffff;
         unSubId(idDeviceList[currentid]);
         if (stateid < idDeviceList.Count()) {
-           fechtSubId(idDeviceList[stateid]);
-           currentid=stateid;
+          fechtSubId(idDeviceList[stateid]);
+          currentid = stateid;
           stateid++;
-        
+
         } else
           stateid = 0;
       }
@@ -363,7 +363,7 @@ void LoopMergeTemp() {
     Serial.println((char*)"\r\n");
     Serial.println((char*)payload);
     // Log.notice(F(" publi name %s : %s " CR), topic2.c_str(), payload2);
-swichtid_signal=1;
+    swichtid_signal = 1;
     if (y != 0) {
       pub(topic2.c_str(), (char*)payload, 1);
       Serial.println(" \r\npublised");
@@ -452,7 +452,7 @@ int reduit(int posmax) {
 
       //    charge += bigcharge[x + y];
       maxt = bigtime[x + y];
-      Log.notice(F(" bigtime %d  bigtempv %d   bigvbat %d   datejoursec %d " CR), bigtime[x + y], bigtempv[x + y], bigvbat[x + y], datejoursec); //, bigcharge[x + y]);
+//      Log.notice(F(" bigtime %d  bigtempv %d   bigvbat %d   datejoursec %d " CR), bigtime[x + y], bigtempv[x + y], bigvbat[x + y], datejoursec); //, bigcharge[x + y]);
     }
 
     if (y == 0)
@@ -503,28 +503,30 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
              timeinfo.tm_sec;
 */
 
-  int day2000 = 10957; //days_from_civil(2000, 1, 1);
-
-  datesecond = (days_from_civil(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday) - day2000) * 24 * 3600;
-  secondnow = datesecond +
-              (timeinfo.tm_hour) * 3600 +
-              timeinfo.tm_min * 60 +
-              timeinfo.tm_sec;
-
   // reposte ancien cumul journalié
 
-  if (MERGETEMPdata.containsKey("tmin") && MERGETEMPdata.containsKey("Date")) { //"/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"
+  if (MERGETEMPdata.containsKey("tmin") && MERGETEMPdata.containsKey("Date") && MERGETEMPdata.containsKey("Stamp")) { //"/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"
     // reposte les jours anterieurs
-    String curdatetxt = (String)(timeinfo.tm_year + 1900) + (String) "-" + (String)(timeinfo.tm_mon + 1) + (String) "-" + (String)timeinfo.tm_mday;
 
-    if (curdatetxt != MERGETEMPdata["Date"]) {
+    char horstamp[200];
+    sprintf(horstamp, "%.2d-%.2d-%.2d",
+            (timeinfo.tm_year) + 1900,
+            timeinfo.tm_mon + 1,
+            timeinfo.tm_mday);
+
+    std::string dateorg = MERGETEMPdata["Date"];
+    int posmr = dateorg.find(horstamp);
+    Log.notice(F(" date.find: %u " CR), posmr);
+
+    if (horstamp != MERGETEMPdata["Stamp"] && posmr != 0) {
+      MERGETEMPdata["Stamp"] = horstamp;
+
       std::string topic = topicOri;
       serializeJson(MERGETEMPdata, payloadjson, 4000);
 
-      int pos = topic.find("/MERGEtoMQTT/");
-      topic = topic.find(pos, 1000);
-
-      Log.notice(F(" reposte: old cumuljour   %s " CR), topic.c_str());
+      int posmr = topic.find("/MERGEtoMQTT/");
+      topic = topic.substr(posmr, 1000);
+      Log.notice(F(" reposte: old cumuljour  %s : %s" CR), topic.c_str());
       pub(topic.c_str(), payloadjson, 1);
 
       return;
@@ -532,12 +534,30 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
   }
 
   // traite nouvelle mesure
-  if (MERGETEMPdata.containsKey("TempCelsius")) { ///LORAtoMQTT/Yaourt1/historisque/#
+
+  std::string topic = topicOri;
+  int poshis = topic.find("History");  //pour les lora
+
+ int posone = topic.find("OneWiretoMQTT");  //pour les local
+  
+
+  if (MERGETEMPdata.containsKey("TempCelsius") && ( poshis > 0 || posone>0)  ) { ///LORAtoMQTT/Yaourt1/historisque/#
+      std::string temp = MERGETEMPdata["TempCelsius"];
+    if (temp=="85")  // ignore car bug reset sur module lora
+       return;
+
+    int day2000 = 10957; //days_from_civil(2000, 1, 1);
+
+    datesecond = (days_from_civil(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday) - day2000) * 24 * 3600;
+    secondnow = datesecond +
+                (timeinfo.tm_hour) * 3600 +
+                timeinfo.tm_min * 60 +
+                timeinfo.tm_sec;
 
     //  serializeJson(MERGETEMPdata, payloadjson, 4000);
     //  Log.notice(payloadjson);
 
-    std::string temp = MERGETEMPdata["TempCelsius"];
+    
 
     std::string Vbatt = "0";
     if (MERGETEMPdata.containsKey("Vbatt")) {
@@ -566,7 +586,7 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
 
     int jourdateinsecond = (days_from_civil(stoi(tokens[2]), stoi(tokens[1]), stoi(tokens[0])) - day2000) * 24 * 3600;
 
-    int second = jourdateinsecond + stoi(tokens[3]) * 3600 + stoi(tokens[4]) * 60 + stoi(tokens[5]);
+    int secondinmessage = jourdateinsecond + stoi(tokens[3]) * 3600 + stoi(tokens[4]) * 60 + stoi(tokens[5]);
 
     /*  int jourdateinsecond = (stoi(tokens[2]) - 2000) * 31536000 +
                            (stoi(tokens[1]) - 1) * 2629743 + // environ       doit commencer a 0
@@ -585,22 +605,24 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
 
     serializeJson(MERGETEMPdata, payloadjson, 4000);
 
-    if (second <= minpos) {
-      minpos = second;
+    if (secondinmessage < minpos) {
+   
       pos = 0;
       Log.notice(F(" remise a O  " CR));
     }
-  
-    bigtime[pos] = second;
+
+   minpos = secondinmessage;
+
+    bigtime[pos] = secondinmessage;
     bigtempv[pos] = stof(temp) * 100;
     bigvbat[pos] = stoi(Vbatt);
     // bigcharge[pos] = stoi(Charge);
 
     //sauvegarde recu pour voir si dernier apres time out
-  //Log.notice(F(" fin:   temp:%s  Vbatt:%s" CR),temp.c_str() ,Vbatt.c_str());
+    //Log.notice(F(" fin:   temp:%s  Vbatt:%s" CR),temp.c_str() ,Vbatt.c_str());
     copyMERGETEMPdata.clear();
 
- //    Log.notice(F("deserializeJson" CR));
+    //    Log.notice(F("deserializeJson" CR));
     deserializeJson(copyMERGETEMPdata, payloadjson, 4000);
 
     if (pos < NBITE - 1)
@@ -616,14 +638,7 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
     //     erasebMQTTtopic(topicOri+20, 1);
     //  }
 
-  } else {
-    //    pub(topicOri,"");
-
-    // Log.notice(F("[ MQTTtoMERGETEMP ]  remove bad hex " CR));
-    // Log.notice(topicOri);
-    //   pubMQTT(topicOri, " ", 1);
-    //    pub(topicOri+20, "{}", 1);
-  }
+  } 
 }
 
 #endif
