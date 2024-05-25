@@ -247,6 +247,13 @@ char mqtt_pass[parameters_size] = MQTT_PASS; // not compulsory only if your brok
 char mqtt_server[parameters_size] = MQTT_SERVER;
 char mqtt_port[6] = MQTT_PORT;
 char ota_pass[parameters_size] = gw_password;
+
+char s1[parameters_size] = SENSORNAME; // Sensor1
+char s2[parameters_size] = SENSORNAME; // Sensor1
+char s3[parameters_size] = SENSORNAME; // Sensor1
+char s4[parameters_size] = SENSORNAME; // Sensor1
+
+
 #ifdef USE_MAC_AS_GATEWAY_NAME
 #  undef WifiManager_ssid
 #  undef ota_hostname
@@ -1739,6 +1746,11 @@ void saveConfig() {
   json["ota_server_cert"] = ota_server_cert;
   json["ota_pass"] = ota_pass;
 
+json["s1"] = s1;
+json["s2"] = s2;
+json["s3"] = s3;
+json["s4"] = s4;
+
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
     Log.error(F("failed to open config file for writing" CR));
@@ -1797,6 +1809,16 @@ bool loadConfigFromFlash() {
           strcpy(ota_pass, json["ota_pass"]);
         if (json.containsKey("ota_server_cert"))
           ota_server_cert = json["ota_server_cert"].as<const char*>();
+
+        if (json.containsKey("s1"))
+          strcpy(s1, json["s1"]);
+        if (json.containsKey("s2"))
+          strcpy(s2, json["s2"]);
+        if (json.containsKey("s3"))
+          strcpy(s3, json["s3"]);
+         if (json.containsKey("s4"))
+          strcpy(s4, json["s4"]);
+
         result = true;
       } else {
         Log.warning(F("failed to load json config" CR));
@@ -3009,6 +3031,29 @@ void MQTTtoSYS(char* topicOri, JsonObject& SYSdata) { // json object decoding
 #  endif
       disconnectClient = true; // trigger reconnect in loop using the new topic/name
     }
+
+
+    if (SYSdata.containsKey("s1") || SYSdata.containsKey("s2") || SYSdata.containsKey("s3")|| SYSdata.containsKey("s4")  ) {
+      if (SYSdata.containsKey("s1")) {
+        strncpy(s1, SYSdata["s1"], parameters_size);
+         Log.notice(F("[SYS] ici MQTTtoSYS s1:%s " CR), s1);
+       }
+       if (SYSdata.containsKey("s2")) {
+        strncpy(s2, SYSdata["s2"], parameters_size);
+         Log.notice(F("[SYS] ici MQTTtoSYS s2:%s " CR), s2);
+      } 
+       if (SYSdata.containsKey("s3")) {
+        strncpy(s3, SYSdata["s3"], parameters_size);
+         Log.notice(F("[SYS] ici MQTTtoSYS s3:%s " CR), s3);
+      }
+       if (SYSdata.containsKey("s4")) {
+        strncpy(s4, SYSdata["s4"], parameters_size);
+          Log.notice(F("[SYS] ici MQTTtoSYS s4: %s " CR), s4);
+     }
+      saveConfig();
+ //     disconnectClient = true; // trigger reconnect in loop using the new topic/name
+    }
+
 
 #  ifdef MQTTsetMQTT
     if (SYSdata.containsKey("mqtt_user") && SYSdata.containsKey("mqtt_pass")) {

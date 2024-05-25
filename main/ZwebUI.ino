@@ -685,6 +685,108 @@ void handleWI() {
   server.send(200, "text/html", response);
 }
 
+
+/**
+ * @brief /MN - Configure sensor name Page
+ * T: handleMQ: uri: /mq, args: 8, method: 1
+ * T: handleMQ Arg: 0, s1=0x1111=Yaourt1
+ * T: handleMQ Arg: 1, s2=0x1111=Yaourt1
+ * T: handleMQ Arg: 2, s3=0x1111=Yaourt1
+ * T: handleMQ Arg: 3, s4=0x1111=Yaourt1 
+
+ */
+void handleMN() {
+  WEBUI_TRACE_LOG(F("handleMN: uri: %s, args: %d, method: %d" CR), server.uri(), server.args(), server.method());
+  WEBUI_SECURE
+  if (server.args()) {
+    for (uint8_t i = 0; i < server.args(); i++) {
+      WEBUI_TRACE_LOG(F("handleMN Arg: %d, %s=%s" CR), i, server.argName(i).c_str(), server.arg(i).c_str());
+    }
+    if (server.hasArg("save")) {
+      StaticJsonDocument<JSON_MSG_BUFFER> WEBtoSYSBuffer;
+      JsonObject WEBtoSYS = WEBtoSYSBuffer.to<JsonObject>();
+      bool update = false;
+
+      if (server.hasArg("s1")) {
+        WEBtoSYS["s1"] = server.arg("s1");
+        if (strncmp(s1, server.arg("s1").c_str(), parameters_size)) {
+          update = true;
+        }
+      }
+
+      if (server.hasArg("s2")) {
+        WEBtoSYS["s2"] = server.arg("s2");
+        if (strncmp(s2, server.arg("s2").c_str(), parameters_size)) {
+          update = true;
+        }
+      }
+
+      if (server.hasArg("s3")) {
+        WEBtoSYS["s3"] = server.arg("s3");
+        if (strncmp(s3, server.arg("s3").c_str(), parameters_size)) {
+          update = true;
+        }
+      }
+      if (server.hasArg("s4")) {
+        WEBtoSYS["s4"] = server.arg("s4");
+        if (strncmp(s4, server.arg("s4").c_str(), parameters_size)) {
+          update = true;
+        }
+      }
+
+
+   
+#  ifndef ESPWifiManualSetup
+      if (update) {
+        Log.warning(F("[WebUI] Save Sensorname" CR));
+
+        char jsonChar[100];
+        serializeJson(modules, jsonChar, measureJson(modules) + 1);
+        char buffer[WEB_TEMPLATE_BUFFER_MAX_SIZE];
+
+        snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, header_html, (String(gateway_name) + " - Save Sensor Name").c_str());
+        String response = String(buffer);
+        response += String(restart_script);
+        response += String(script);
+        response += String(style);
+        snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, reset_body, jsonChar, gateway_name, "Save Sensor Name");
+        response += String(buffer);
+        snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, footer, OMG_VERSION);
+        response += String(buffer);
+        server.send(200, "text/html", response);
+
+        delay(2000); // Wait for web page to be sent before
+        String topic = String(mqtt_topic) + String(gateway_name) + String(subjectMQTTtoSYSset);
+        String output;
+        serializeJson(WEBtoSYS, output);
+        Log.notice(F("[WebUI] ici MQTTtoSYS %s  %s" CR), output.c_str(), (char*)topic.c_str());
+        MQTTtoSYS((char*)topic.c_str(), WEBtoSYS);
+        return;
+      } else {
+        Log.warning(F("[WebUI] No changes" CR));
+      }
+#  endif
+    }
+  }
+
+  char jsonChar[100];
+  serializeJson(modules, jsonChar, measureJson(modules) + 1);
+
+  char buffer[WEB_TEMPLATE_BUFFER_MAX_SIZE];
+
+  snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, header_html, (String(gateway_name) + " - Configure MQTT").c_str());
+  String response = String(buffer);
+  response += String(script);
+  response += String(style);
+  // mqtt server (mh), mqtt port (ml), mqtt username (mu), mqtt password (mp), secure connection (sc), server certificate (msc), topic (mt)
+  snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, config_sensorname_body, jsonChar,gateway_name, s1,s2,s3,s4);
+  response += String(buffer);
+  snprintf(buffer, WEB_TEMPLATE_BUFFER_MAX_SIZE, footer, OMG_VERSION);
+  response += String(buffer);
+  server.send(200, "text/html", response);
+}
+
+
 /**
  * @brief /MQ - Configure MQTT Page
  * T: handleMQ: uri: /mq, args: 8, method: 1
@@ -1356,7 +1458,7 @@ void handleIN() {
     informationDisplay += "1<BR>Cloud}2}1";
     informationDisplay += stateCLOUDStatus();
 #  endif
-#  if defined(ZgatewayLORA)
+#  if defined(ZgatewayLORA) 
     informationDisplay += "1<BR>LORA}2}1";
     informationDisplay += stateLORAMeasures();
 #  endif
@@ -1623,6 +1725,7 @@ void WebUISetup() {
   server.on("/cn", handleCN); // Configuration
   server.on("/wi", handleWI); // Configure Wifi
   server.on("/mq", handleMQ); // Configure MQTT
+    server.on("/mn", handleMN); // Configure MN Pafil
 #  ifndef ESPWifiManualSetup
   server.on("/cg", handleCG); // Configure gateway"
 #  endif

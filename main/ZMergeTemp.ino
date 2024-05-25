@@ -135,6 +135,42 @@ int16_t Jour_tmmaxtemp, Jour_tmmintemp;
 int stateid = 0;
 int swichtid_signal = 0;
 
+std::string extractId(const std::string& path) {
+    size_t pos = path.find_last_of('/');
+    if (pos != std::string::npos) {
+        return path.substr(pos + 1);
+    }
+    return path; // Return the original string if no '/' is found
+}
+std::string findNomenclair(const std::string& id, const std::string& s1, const std::string& s2, const std::string& s3, const std::string& s4) {
+    // Helper lambda to find and return the nomenclair from a string if the id matches
+    auto getNomenclair = [&id](const std::string& s) -> std::string {
+        size_t pos = s.find('=');
+        if (pos != std::string::npos && s.substr(0, pos) == id) {
+            return s.substr(pos + 1);
+        }
+        return "";
+    };
+
+    // Check each string
+    std::string nomenclair = getNomenclair(s1);
+    if (!nomenclair.empty()) return nomenclair;
+
+    nomenclair = getNomenclair(s2);
+    if (!nomenclair.empty()) return nomenclair;
+
+    nomenclair = getNomenclair(s3);
+    if (!nomenclair.empty()) return nomenclair;
+
+    nomenclair = getNomenclair(s4);
+    if (!nomenclair.empty()) return nomenclair;
+
+    // If not found, return the id
+    return id;
+}
+
+
+
 void fechtSubId(std::string id) {
   char topicH[mqtt_topic_max_size];
   strcpy(topicH, mqtt_topic);
@@ -145,7 +181,13 @@ void fechtSubId(std::string id) {
   if (client.subscribe(topicH)) {
     Log.notice(F(" subscrib : %s" CR), topicH);
   }
-  std::string payload = "{id:\"" + id  + "\"}"; // ajouyte sensor name
+
+   std::string idfin = extractId(id);
+
+    std::string result = findNomenclair(idfin, s1, s2, s3, s4);
+  
+
+  std::string payload = "{id:\"" + id  + "\" ,  visiblename:\"" + result  + "\"  }"; // ajouyte sensor name
  std::string  sensorname =  strrchr( id.c_str(), '/' ) +1 ;
 
   std::string topic = (std::string) "/MERGEtoMQTT/Sensor/" +sensorname.c_str();

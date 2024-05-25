@@ -164,6 +164,8 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  define mqtt_max_packet_size 128
 #endif
 
+#  define SENSORNAME "id=NomEnClair"
+
 #ifndef MQTT_USER
 #  define MQTT_USER ""
 #endif

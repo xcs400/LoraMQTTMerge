@@ -62,7 +62,7 @@
 #else
 #  define configure_6
 #endif
-#define configure_7
+#define configure_7 "<p><form action='mn' method='get'><button>Configure SensorName</button></form></p>"
 #define configure_8
 
 /*------------------- ----------------------*/
@@ -104,6 +104,10 @@ const char config_wifi_body[] = body_header "%s<br><div><a href='/wi?scan='><b>S
 // mqtt server (mh), mqtt port (ml), mqtt username (mu), mqtt password (mp), secure connection (sc), server certificate (msc), topic (mt)
 
 const char config_mqtt_body[] = body_header "<fieldset class=\"set1\"><legend><span><b>MQTT Parameters</b></span></legend><form method='get' action='mq'><p><b>MQTT Server</b><br><input id='mh' placeholder=" MQTT_SERVER " value='%s'></p><p><b>MQTT Port</b><br><input id='ml' placeholder=" MQTT_PORT " value='%s'></p><p><b>MQTT Username</b><br><input id='mu' placeholder=" MQTT_USER " value='%s'></p><p><label><b>MQTT Password</b></label><br><input id='mp' type='password' placeholder=\"Password\" ></p><p><b>MQTT Secure Connection</b><br><input id='sc' type='checkbox' %s></p><p><b>Gateway Name</b><br><input id='h' placeholder=" Gateway_Name " value=\"%s\"></p><p><b>MQTT Base Topic</b><br><input id='mt' placeholder='' value='%s'></p><br><button name='save' type='submit' class='button bgrn'>Save</button></form></fieldset>" body_footer_config_menu;
+
+
+const char config_sensorname_body[] = body_header "<fieldset class=\"set1\"><legend><span><b>Sensor Name</b></span></legend><form method='get' action='mn'><p><b>definir les noms en clair</b><br><input id='s1' placeholder=" SENSORNAME " value='%s'></p><br><input id='s2' placeholder=" SENSORNAME " value='%s'></p><br><input id='s3' placeholder=" SENSORNAME " value='%s'></p><br><input id='s4' placeholder=" SENSORNAME " value='%s'></p><br><button name='save' type='submit' class='button bgrn'>Save</button></form></fieldset>" body_footer_config_menu;
+
 
 #ifndef ESPWifiManualSetup
 const char config_gateway_body[] = body_header "<fieldset class=\"set1\"><legend><span><b>Gateway Configuration</b></span></legend><form method='get' action='cg'><p><b>Gateway Password (8 characters min)</b><br><input id='gp' type='password' placeholder=\"********\"></p><br><button name='save' type='submit' class='button bgrn'>Save</button></form></fieldset>" body_footer_config_menu;
