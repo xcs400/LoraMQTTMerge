@@ -151,7 +151,7 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  ifndef mqtt_max_packet_size
 #    ifdef MQTT_HTTPS_FW_UPDATE
 #      ifndef CHECK_OTA_UPDATE
-#        define CHECK_OTA_UPDATE true // enable to check for the presence of a new version for your environment on Github
+#        define CHECK_OTA_UPDATE false // enable to check for the presence of a new version for your environment on Github
 #      endif
 #      define mqtt_max_packet_size 2560
 #    else
@@ -245,7 +245,7 @@ ug==
 const char* alpnProtocols[] = {"x-amzn-mqtt-ca", NULL};
 #  endif
 
-//#  define MQTT_HTTPS_FW_UPDATE //uncomment to enable updating via MQTT message.
+#  define MQTT_HTTPS_FW_UPDATE //uncomment to enable updating via MQTT message.
 
 #  ifdef MQTT_HTTPS_FW_UPDATE
 // If used, this should be set to the root CA certificate of the server hosting the firmware.
@@ -266,7 +266,23 @@ const char* alpnProtocols[] = {"x-amzn-mqtt-ca", NULL};
 #    define ENTITY_PICTURE   "https://github.com/1technophile/OpenMQTTGateway/raw/development/docs/img/Openmqttgateway_logo_mini_margins.png"
 #    define RELEASE_LINK_DEV "https://github.com/1technophile/OpenMQTTGateway/raw/gh-pages/dev/firmware_build/"
 #    define RELEASE_LINK     "https://github.com/1technophile/OpenMQTTGateway/releases/download/"
+
+
+
+#    if DEVELOPMENTOTA
+#      define OTA_JSON_URL "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/release/latest_version_dev.json" //OTA url used to discover new versions of the firmware from development nightly builds
+#    else
+#      define OTA_JSON_URL "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/latest_version.json" //OTA url used to discover new versions of the firmware
+#    endif
+#    define ENTITY_PICTURE   "https://github.com/1technophile/OpenMQTTGateway/raw/development/docs/img/Openmqttgateway_logo_mini_margins.png"
+#    define RELEASE_LINK_DEV "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/"
+#    define RELEASE_LINK     "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/"
+
+
 #  endif
+
+
+
 
 #  ifndef MQTT_SECURE_SELF_SIGNED
 #    define MQTT_SECURE_SELF_SIGNED 0
