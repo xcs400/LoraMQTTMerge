@@ -546,7 +546,7 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
 */
 
   // reposte ancien cumul journalié
-
+// en fait c'est inutile le serveur les supprime quand meme au bout de 3 jours
   if (MERGETEMPdata.containsKey("tmin") && MERGETEMPdata.containsKey("Date") && MERGETEMPdata.containsKey("Stamp")) { //"/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"
     // reposte les jours anterieurs
 

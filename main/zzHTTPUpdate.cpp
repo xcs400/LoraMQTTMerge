@@ -28,7 +28,7 @@
 #  include <StreamString.h>
 #  include <esp_ota_ops.h> // get running partition
 #  include <esp_partition.h>
-
+#include <ArduinoLog.h>
 // To do extern "C" uint32_t _SPIFFS_start;
 // To do extern "C" uint32_t _SPIFFS_end;
 
@@ -166,6 +166,7 @@ String getSketchSHA256() {
  */
 HTTPUpdateResult HTTPUpdate::handleUpdate(HTTPClient& http, const String& currentVersion, bool spiffs) {
   HTTPUpdateResult ret = HTTP_UPDATE_FAILED;
+              Log.notice(F("handleUpdate in" CR));
 
   // use HTTP/1.0 for update since the update handler not support any transfer Encoding
   http.useHTTP10(true);
@@ -177,10 +178,12 @@ HTTPUpdateResult HTTPUpdate::handleUpdate(HTTPClient& http, const String& curren
   http.addHeader("x-ESP32-AP-MAC", WiFi.softAPmacAddress());
   http.addHeader("x-ESP32-free-space", String(ESP.getFreeSketchSpace()));
   http.addHeader("x-ESP32-sketch-size", String(ESP.getSketchSize()));
+     Log.notice(F("getSketchMD5" CR));
   String sketchMD5 = ESP.getSketchMD5();
   if (sketchMD5.length() != 0) {
     http.addHeader("x-ESP32-sketch-md5", sketchMD5);
   }
+    Log.notice(F("getSketchSHA256" CR));
   // Add also a SHA256
   String sketchSHA256 = getSketchSHA256();
   if (sketchSHA256.length() != 0) {
@@ -198,23 +201,23 @@ HTTPUpdateResult HTTPUpdate::handleUpdate(HTTPClient& http, const String& curren
   if (currentVersion && currentVersion[0] != 0x00) {
     http.addHeader("x-ESP32-version", currentVersion);
   }
-
+       Log.notice(F("handleUpdate2" CR));
   const char* headerkeys[] = {"x-MD5"};
   size_t headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
   // track these headers
   http.collectHeaders(headerkeys, headerkeyssize);
-
+    Log.notice(F("handleUpdate3" CR));
   int code = http.GET();
   int len = http.getSize();
-
+      Log.notice(F("getSize" CR));
   if (code <= 0) {
     log_e("HTTP error: %s\n", http.errorToString(code).c_str());
     _lastError = code;
     http.end();
     return HTTP_UPDATE_FAILED;
   }
-
+ Log.notice(F("handleUpdate4" CR));
   log_d("Header read fin.\n");
   log_d("Server header:\n");
   log_d(" - code: %d\n", code);
@@ -223,7 +226,10 @@ HTTPUpdateResult HTTPUpdate::handleUpdate(HTTPClient& http, const String& curren
   if (http.hasHeader("x-MD5")) {
     log_d(" - MD5: %s\n", http.header("x-MD5").c_str());
   }
+ 
+    Log.notice(F("getFreeSketchSpace" CR));
 
+     Log.notice(F("getFreeSketchSpace1" CR));
   log_d("ESP32 info:\n");
   log_d(" - free Space: %d\n", ESP.getFreeSketchSpace());
   log_d(" - current Sketch Size: %d\n", ESP.getSketchSize());

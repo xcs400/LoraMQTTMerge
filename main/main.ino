@@ -208,6 +208,9 @@ struct GfSun2000Data {};
 #ifdef ZsensorGPIOInput
 #  include "config_GPIOInput.h"
 #endif
+#ifdef ZsensorGPIOInputChat
+#  include "config_GPIOInputChat.h"
+#endif
 #ifdef ZsensorGPIOKeyCode
 #  include "config_GPIOKeyCode.h"
 #endif
@@ -1360,6 +1363,10 @@ if ( setupZsensorHTU21())
   setupGPIOInput();
   modules.add(ZsensorGPIOInput);
 #endif
+#ifdef ZsensorGPIOInputChat
+  setupGPIOInputChat();
+  modules.add(ZsensorGPIOInputChat);
+#endif
 #ifdef ZsensorGPIOKeyCode
   setupGPIOKeyCode();
   modules.add(ZsensorGPIOKeyCode);
@@ -2252,6 +2259,9 @@ void loop() {
 #ifdef ZsensorGPIOInput
       MeasureGPIOInput();
 #endif
+#ifdef ZsensorGPIOInputChat
+      MeasureGPIOInputChat();
+#endif
 #ifdef ZsensorGPIOKeyCode
       MeasureGPIOKeyCode();
 #endif
@@ -2391,7 +2401,7 @@ unsigned long uptime() {
  */
 #if defined(ESP32) && !defined(NO_INT_TEMP_READING)
 float intTemperatureRead() {
-  SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);
+ /* SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);
   SET_PERI_REG_BITS(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_CLK_DIV, 10, SENS_TSENS_CLK_DIV_S);
   CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_POWER_UP);
   CLEAR_PERI_REG_MASK(SENS_SAR_TSENS_CTRL_REG, SENS_TSENS_DUMP_OUT);
@@ -2403,6 +2413,8 @@ float intTemperatureRead() {
   float temp_f = (float)GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR3_REG, SENS_TSENS_OUT, SENS_TSENS_OUT_S);
   float temp_c = (temp_f - 32) / 1.8;
   return temp_c;
+  */
+ return 0;
 }
 #endif
 
@@ -2869,9 +2881,10 @@ void MQTTHttpsFWUpdate(char* topicOri, JsonObject& HttpsFwUpdateData) {
         } else {
           Log.notice(F("Using config cert" CR));
           ota_cert = OTAserver_cert;
+ 
         }
       }
-
+   
       t_httpUpdate_return result = HTTP_UPDATE_FAILED;
       if (strstr(url, "http:")) {
         Log.notice(F("Http update" CR));
@@ -2894,10 +2907,16 @@ void MQTTHttpsFWUpdate(char* topicOri, JsonObject& HttpsFwUpdateData) {
         }
 
 #  ifdef ESP32
+
+        Log.notice(F("update_client" CR));
+
         update_client.setCACert(ota_cert);
         update_client.setTimeout(12);
+ 
         httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
         httpUpdate.rebootOnUpdate(false);
+               Log.notice(F("update" CR));
+  
         result = httpUpdate.update(update_client, url);
 #  elif ESP8266
         caCert.append(ota_cert);

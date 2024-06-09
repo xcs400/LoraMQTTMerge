@@ -29,7 +29,7 @@
 #define user_config_h
 /*-------------------VERSION----------------------*/
 #ifndef OMG_VERSION
-#  define OMG_VERSION "version_tag"
+#  define OMG_VERSION   "0.1"  // "version_tag"
 #endif
 
 /*-------------CONFIGURE WIFIMANAGER-------------(only ESP8266 & SONOFF RFBridge)*/
@@ -245,7 +245,7 @@ ug==
 const char* alpnProtocols[] = {"x-amzn-mqtt-ca", NULL};
 #  endif
 
-#  define MQTT_HTTPS_FW_UPDATE //uncomment to enable updating via MQTT message.
+//#  define MQTT_HTTPS_FW_UPDATE //uncomment to enable updating via MQTT message.
 
 #  ifdef MQTT_HTTPS_FW_UPDATE
 // If used, this should be set to the root CA certificate of the server hosting the firmware.
@@ -268,15 +268,14 @@ const char* alpnProtocols[] = {"x-amzn-mqtt-ca", NULL};
 #    define RELEASE_LINK     "https://github.com/1technophile/OpenMQTTGateway/releases/download/"
 
 
-
 #    if DEVELOPMENTOTA
 #      define OTA_JSON_URL "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/release/latest_version_dev.json" //OTA url used to discover new versions of the firmware from development nightly builds
 #    else
-#      define OTA_JSON_URL "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/latest_version.json" //OTA url used to discover new versions of the firmware
+#      define OTA_JSON_URL "https://github.com/xcs400/LoraMQTTMerge/raw/development/uploadablerelease/latest_version.json" //OTA url used to discover new versions of the firmware
 #    endif
 #    define ENTITY_PICTURE   "https://github.com/1technophile/OpenMQTTGateway/raw/development/docs/img/Openmqttgateway_logo_mini_margins.png"
-#    define RELEASE_LINK_DEV "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/"
-#    define RELEASE_LINK     "https://github.com/xcs400/LoraMQTTMerge/uploadablerelease/"
+#    define RELEASE_LINK_DEV "https://github.com/xcs400/LoraMQTTMerge/raw/development/uploadablerelease/firmware.bin"
+#    define RELEASE_LINK     "https://github.com/xcs400/LoraMQTTMerge/raw/development/uploadablerelease/firmware.bin"
 
 
 #  endif
@@ -833,12 +832,12 @@ void storeSignalValue(SIGNAL_SIZE_UL_ULL);
 // Origin topics
 //#define subjectBTtoMQTT "/BTtoMQTT"
 
-#define ZMergeTemp "MERGETEMP"
+//#define ZMergeTemp "MERGETEMP"
 #define subjectBTMERGETEMP "/History"
 #define TOPICMERGETEMP "/LORAtoMQTT/Yaourt1/#"                   // 1    0
 #define TOPICMERGETEMPYaourt2 "/OneWiretoMQTT/ds1820/Yaourt2/#"           // 0    1
 
-#define ZsensorDS1820 "DS1820"                                     //  0   1
+//#define ZsensorDS1820 "DS1820"                                     //  0   1
 
 //#define  ZsensorHTU21 "HTU21"
 #define convertTemp_CtoF(c) ((c * 1.8) + 32)

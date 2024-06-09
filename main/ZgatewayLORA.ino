@@ -445,7 +445,7 @@ return ;   //do nothing
     }
 
 
- displaysetFont(ArialMT_Plain_10);
+ //displaysetFont(ArialMT_Plain_10);
  
  if (LORAdata.containsKey("model")) 
   {
@@ -478,8 +478,8 @@ return ;   //do nothing
  if (LORAdata.containsKey("TempCelsius")) 
   {
     std::string TempCelsius= LORAdata["TempCelsius"];
-   displaysetFont(ArialMT_Plain_24);
-    displayPrint( (char*)  ((std::string) "Temperature:" + TempCelsius).c_str()) ;
+  // displaysetFont(ArialMT_Plain_24);
+   // displayPrint( (char*)  ((std::string) "Temperature:" + TempCelsius).c_str()) ;
   }
 
 
