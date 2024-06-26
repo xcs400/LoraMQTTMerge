@@ -209,29 +209,50 @@ void unSubId(std::string id) {
 }
 
 int currentid = 0;
+unsigned long timeoutabonnement;
+
+/* evalue copyMERGETEMPdata pour ajouter de nouvelle data 
+copyMERGETEMPdata est generé par la reception des abonnements effectuer sequencielement  depuis le contenu de idDeviceList  */
 void LoopMergeTemp() {
   std::string currentTopic;
+
+ // Log.notice(F("stateid: %d" CR), stateid);
+ // Log.notice(F("currentid: %d" CR), currentid);
+ // Log.notice(F("Count: %d" CR), idDeviceList.Count());
+
+
   switch (stateid) {
     case 0:
-      if (stateid < idDeviceList.Count()) {
-        fechtSubId(idDeviceList[0]);
-        currentid = 0;
-        stateid++;
+      if (currentid < idDeviceList.Count()) {
+        fechtSubId(idDeviceList[currentid]);
+         stateid++;
+        timeoutabonnement=  millis();
+        Log.notice(F( "\r\n debut abonnent %d "CR),currentid);
+      
+
       }
       break;
+    case 1:   
+       if  (millis()- timeoutabonnement > 60 *1000)
+         stateid++;
+      break;
     default:
-      if (swichtid_signal == 2) {
-        swichtid_signal = 0;
+ //     if (swichtid_signal == 2) 
+      {        // on a recu des donnée , desabonne et passe au suivant
+    //    swichtid_signal = 0;
         pos = 0;
         minpos = 0xffffffff;
+         
+       Log.notice(F( "\r\n fin timeout abonnent,  unsubscribe %d "CR),currentid);
+ 
         unSubId(idDeviceList[currentid]);
-        if (stateid < idDeviceList.Count()) {
-          fechtSubId(idDeviceList[stateid]);
-          currentid = stateid;
-          stateid++;
+        if (currentid < idDeviceList.Count()-1) {
+          currentid++;
+         } else
+          {currentid = 0;
+          }
+        stateid=0;
 
-        } else
-          stateid = 0;
       }
   }
 
@@ -512,7 +533,7 @@ int reduit(int posmax) {
 
 //----------------MQTTtoMERGETEMP-------------------------------------------
 // ici on recoit tout les messages "/LORAtoMQTT/Yaourt1/Historisque/#"  "TempCelsius"
-// ici on recoit tout les messages "/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"  date du cumul jour
+// ici on recoit tout les messages "/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"  date du cumul jour    plus traiter
 
 // le cumul du jour est realiser a chaque message ;  les cumul des jours passer doivent etre reposter regulierement pour ne pas etre effacer par le serveur
 // on gere une machine d'etat pour realiser les cumul par noeud "yaourtx";
@@ -547,7 +568,7 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
 
   // reposte ancien cumul journalié
 // en fait c'est inutile le serveur les supprime quand meme au bout de 3 jours
-  if (MERGETEMPdata.containsKey("tmin") && MERGETEMPdata.containsKey("Date") && MERGETEMPdata.containsKey("Stamp")) { //"/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"
+ /* if (MERGETEMPdata.containsKey("tmin") && MERGETEMPdata.containsKey("Date") && MERGETEMPdata.containsKey("Stamp")) { //"/LORAtoMQTT/Yaourt1/Histo/XXXX-xx-xx"
     // reposte les jours anterieurs
 
     char horstamp[200];
@@ -574,6 +595,8 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
       return;
     }
   }
+*/
+
 
   // traite nouvelle mesure
 
@@ -582,7 +605,7 @@ void MQTTtoMERGETEMP(char* topicOri, JsonObject& MERGETEMPdata) { // json object
 
  int posone = topic.find("OneWiretoMQTT");  //pour les local
   
-
+// merge si contiend  TempCelsius  ne concerne donc pas chauffeau
   if (MERGETEMPdata.containsKey("TempCelsius") && ( poshis > 0 || posone>0)  ) { ///LORAtoMQTT/Yaourt1/historisque/#
       std::string temp = MERGETEMPdata["TempCelsius"];
     if (temp=="85")  // ignore car bug reset sur module lora

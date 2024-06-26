@@ -455,8 +455,8 @@ return ;   //do nothing
 
  if (LORAdata.containsKey("id")) 
   {
-    if (swichtid_signal==1)   // declenche swich id mergetemp  sur reception message
-       swichtid_signal=2;
+  //  if (swichtid_signal==1)   // declenche swich id mergetemp  sur reception message
+   //    swichtid_signal=2;
 
     std::string id = LORAdata["id"];
     displayPrint( (char*) ((std::string) "ID:" + id).c_str()) ;
@@ -493,49 +493,6 @@ return ;   //do nothing
  Serial.println(out);
 
 
-/*
-#define SIZETSTOR 60000
-static char  stor[SIZETSTOR];
-static int Currentp_storage=0;
-
- if (LORAdata.containsKey("id") &&   LORAdata.containsKey("TempCelsius")) 
-  {
-  std::string id = LORAdata["id"];
-  std::string Charge = LORAdata["Charge%"];
-  std::string TempCelsius= LORAdata["TempCelsius"];
-
-    std::string jso= (std::string) "{d:'"  + (std::string)out +  (std::string)"',id:'" + id + (std::string) "',B:" + Charge  + (std::string)",T:" + TempCelsius  + (std::string)"}";
-
-    if (Currentp_storage ==0 )
-          {  strcpy( stor,(char*) jso.c_str());
-            Currentp_storage+= jso.length();
-          }
-    else
-        if ( Currentp_storage !=0   &&  Currentp_storage+ jso.length() < SIZETSTOR - 100)
-              {
-                stor[Currentp_storage]= ',' ;  // ajout , 
-                strcpy( &stor[Currentp_storage+1], (char*) jso.c_str() );
-                Currentp_storage+= jso.length()+1;
-              }
-            else
-              Serial.println( "\r\n ca deborde !!"  ); 
-
-  if (Currentp_storage>=  SIZETSTOR-100)
-      {
-        int y=0;
-        for ( ; y< SIZETSTOR ; y++)
-          if ( stor[y] == ',')
-              break;
-      memmove( stor, &stor[y+1], SIZETSTOR-y-1 ); 
-      Currentp_storage-= (y+1);
-      if (Currentp_storage<0)
-          Currentp_storage=0;
-      }
-
-   // Serial.println( stor  ); 
-    }
- */
-  //  LORAdata["History"]=(std::string)"[" + stor+(std::string)"]" ;
   std::string sensor = LORAdata["id"];
 
     LORAdata["name"]=LORAdata["id"];
