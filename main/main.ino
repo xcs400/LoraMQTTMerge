@@ -2668,6 +2668,11 @@ void receivingMQTT(char* topicOri, char* datacallback) {
     MQTTtoMERGETEMP (topicOri,jsondata);
 #  endif
 
+#if defined(ZsensorGPIOInputChat)
+    MQTTtoChat (topicOri,jsondata);
+#  endif
+
+
 #  ifdef ZgatewayLORA
     MQTTtoLORA(topicOri, jsondata);
 #  endif
@@ -2696,7 +2701,7 @@ void receivingMQTT(char* topicOri, char* datacallback) {
     MQTTtoFASTLED(topicOri, jsondata);
 #  endif
 #  ifdef ZactuatorPWM
-    MQTTtoPWM(topicOri, jsondata);
+    MQTTtoPWM(topicOri, jsondata,0);
 #  endif
 #  if defined(ZboardM5STICKC) || defined(ZboardM5STICKCP) || defined(ZboardM5STACK) || defined(ZboardM5TOUGH)
     MQTTtoM5(topicOri, jsondata);

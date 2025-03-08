@@ -27,7 +27,11 @@
 
 extern void setupPWM();
 extern void PWMLoop();
-extern void MQTTtoPWM(char*, JsonObject&);
+extern void MQTTtoPWM(char*, JsonObject& , int yes);
+
+// pour le chat croquette;   le sero doit etre a 50HZ,  il accepte des pulses de 1ms(-90°) a 2ms (+90°)
+// a 50hz  le cycle est a 20ms  , 0 à 1  = 0 a 20Ms  ;   0.05 =1ms
+// a 50hz  le cycle est a 20ms  , 0 à 1  = 0 a 20Ms  ;   0.10 =2ms
 
 #define subjectMQTTtoPWM          "/commands/MQTTtoPWM"
 #define subjectMQTTtoPWMset       subjectMQTTtoPWM "/set" //set channel(s) with JSON struct {"r":0-1,"g":0-1,"b":0-1,"w0":0-1,"w0":0-1,"fade":<fade time in seconds>}
@@ -53,5 +57,5 @@ extern void MQTTtoPWM(char*, JsonObject&);
 // This just defines the default gamma to use for all channels.
 // The gamma for each channel can be modified using the calibrate MQTT topic.
 #ifndef PWM_DEFAULT_GAMMA
-#  define PWM_DEFAULT_GAMMA 2.2f
+#  define PWM_DEFAULT_GAMMA 1.0f
 #endif

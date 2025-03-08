@@ -69,7 +69,7 @@ void setup() {
   display.flipScreenVertically();
   display.setFont(ArialMT_Plain_10);
 
-  delay(1500);
+c
 }
 
 void loop() {

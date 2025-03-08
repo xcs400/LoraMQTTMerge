@@ -174,10 +174,12 @@ void MeasureDS1820Temp() {
 
           DS1820data["Time"] = String(out);
           DS1820data["name"] = DS1820data["id"];
-          DS1820data["id"] = sensname + String("/History/") + String(out);
+//          DS1820data["id"] = sensname + String("/History/") + String(out);
+          DS1820data["id"] = sensname + String("/Lastmessage");
 
           String topicn = String(OW_TOPIC) + "/";
-          String origin = topicn + sensname + String("/History/") + String(out);
+//          String origin = topicn + sensname + String("/History/") + String(out);
+          String origin = topicn + sensname + String("/Lastmessage") ;
 
           DS1820data["origin"] = origin;
           if (swichtid_signal == 1) // declenche swich id mergetemp  sur reception message

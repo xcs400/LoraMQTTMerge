@@ -44,7 +44,7 @@ extern void MeasureGPIOInput();
 #endif
 
 #ifndef GPIO_INPUT_TYPE
-#  define GPIO_INPUT_TYPE INPUT_PULLUP
+#  define GPIO_INPUT_TYPE  INPUT_PULLUP
 #endif
 
 #define INPUT_GPIO_ON_VALUE  "HIGH"

@@ -74,6 +74,7 @@
 static long previousUpdateTime = 0; // milliseconds
 static long currentUpdateTime = 0; // milliseconds
 
+
 static const char* channelJsonKeys[] = PWM_CHANNEL_NAMES;
 static const int channelPins[] = PWM_CHANNEL_PINS;
 static const int kNumChannels = sizeof(channelPins) / sizeof(int);
@@ -85,7 +86,7 @@ static float targetValues[kNumChannels] = {};
 
 static long fadeStartUpdateTime[kNumChannels] = {}; // milliseconds
 static long fadeEndUpdateTime[kNumChannels] = {}; // milliseconds
-static bool fadeIsComplete = false;
+static bool fadeIsComplete = false; 
 
 // Calibration data (initialised during setupPWM)
 static float calibrationMinLinear[kNumChannels];
@@ -128,7 +129,7 @@ void setupPWM() {
     // Configure the pin for PWM output.
     // I think this is the fastest frequency that allows for a 16-bit
     // duty cycle on an ESP32
-    ledcSetup(i, 625.0, kNumDutyCycleBits);
+    ledcSetup(i, 50.0, kNumDutyCycleBits);
     ledcAttachPin(channelPins[i], i);
 #  endif
     calibrationMinLinear[i] = 0.f;
@@ -196,8 +197,16 @@ boolean PWMtoMQTT() {
 }
 
 #  if jsonReceiving
-void MQTTtoPWM(char* topicOri, JsonObject& jsonData) {
-  if (cmpToMainTopic(topicOri, subjectMQTTtoPWMset)) {
+void MQTTtoPWM(char* topicOri, JsonObject& jsonData,int yes) {
+ // Log.trace(F("in MQTTtoPWM %s " CR ), topicOri );
+ // Log.trace(F("in yes %s " CR ), yes );
+
+
+ // serializeJson(jsonData, Serial); // Affichage du JSON dans la console série
+ // Serial.println();
+ 
+
+  if (yes==1 || cmpToMainTopic(topicOri, subjectMQTTtoPWMset)) {
     Log.trace(F("MQTTtoPWM JSON analysis" CR));
     // Parse the target value for each channel
     int modifiedChannelBits = 0;

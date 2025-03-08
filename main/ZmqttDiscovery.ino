@@ -27,6 +27,9 @@
 
 #ifdef ZmqttDiscovery
 
+
+
+
 String getMacAddress() {
   uint8_t baseMac[6];
   char baseMacChr[13] = {0};
@@ -903,6 +906,145 @@ void pubMqttDiscovery() {
   );
 #  endif
 
+
+//Log.notice(F("DistributionEnabled %u "  CR ),    DistributionEnabled);
+//Log.notice(F("pulsemin: %s "  CR ),    String(pulsemin).c_str()   );
+//Log.notice(F("pulsemax: %s "  CR ),    String(pulsemax).c_str() );
+//Log.notice(F("pulsedelay: %s "  CR ),  String(pulsedelay).c_str() );
+//Log.notice(F("fade: %s "  CR ),        String(fade).c_str() );
+//Log.notice(F("pulsecycle:%u "  CR ),       pulsecycle);
+//Log.notice(F("limitpush: %u "  CR ),       limitpush);
+
+#ifdef ZsensorGPIOInputChat
+
+Log.trace(F("ChatDiscovery" CR));
+
+
+
+
+createDiscovery("sensor", //set Type
+  subjectCHATtoMQTT, "Appuispendantvalide", (char*)getUniqueId("Appuispendantvalide", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.Appuispendantvalide }}", //set availability_topic,device_class,value_template,
+  "", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, "", //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain
+  stateClassNone //State Class
+);
+
+createDiscovery("sensor", //set Type
+  subjectCHATtoMQTT, "Appuispendantdevalide", (char*)getUniqueId("Appuispendantdevalide", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.Appuispendantdevalide }}", //set availability_topic,device_class,value_template,
+  "", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, "", //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain
+  stateClassNone //State Class
+);
+
+  
+
+
+
+
+createDiscovery("button", //set Type
+  will_Topic, "ResetCompteur", (char*)getUniqueId("ResetCompteur", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "", //set availability_topic,device_class,value_template,
+  "{\"ResetCompteur\":1}", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device MAC, retain
+  stateClassNone //State Class
+);
+
+
+
+
+
+createDiscovery("button", //set Type
+  will_Topic, "donnecroquette", (char*)getUniqueId("donnecroquette", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "", //set availability_topic,device_class,value_template,
+  "{\"DistributionEnabled\":99}", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device MAC, retain
+  stateClassNone //State Class
+);
+
+
+
+char* actuatorCHAT[8] = {"switch", "DistributionEnabled", "", "", "{{ value_json.DistributionEnabled }}", "{\"DistributionEnabled\":true}", "{\"DistributionEnabled\":false}", ""};
+//component type,name,availability topic,device class,value template,payload on, payload off, unit of measurement
+
+//trc(actuatorONOFF[1]);
+createDiscovery(actuatorCHAT[0],
+              subjectCHATtoMQTT, actuatorCHAT[1], (char*)getUniqueId(actuatorCHAT[1], actuatorCHAT[2]).c_str(),
+                will_Topic, actuatorCHAT[3], actuatorCHAT[4],
+                actuatorCHAT[5], actuatorCHAT[6], actuatorCHAT[7],
+                0, Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT,
+                "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain
+                stateClassNone,  //State Class,
+                "false", "true");  //state_off, state_on);
+
+
+
+
+
+createDiscovery("number", //set Type
+  subjectMQTTtoCHAT, "pulsemin", (char*)getUniqueId("pulsemin", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.pulsemin }}", //set availability_topic,device_class,value_template,
+  "{\"pulsemin\":{{value}},\"save\":true}", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain,
+  stateClassNone //State Class
+);
+
+createDiscovery("number", //set Type
+  subjectMQTTtoCHAT, "pulsemax", (char*)getUniqueId("pulsemax", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.pulsemax }}", //set availability_topic,device_class,value_template,
+  "{\"pulsemax\":{{value}},\"save\":true}", "", "s", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain,
+  stateClassNone //State Class
+);
+
+createDiscovery("number", //set Type
+  subjectMQTTtoCHAT, "pulsedelay", (char*)getUniqueId("pulsedelay", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.pulsedelay }}", //set availability_topic,device_class,value_template,
+  "{\"pulsedelay\":{{value}},\"save\":true}", "", "s", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain,
+  stateClassNone //State Class
+);
+
+createDiscovery("number", //set Type
+  subjectMQTTtoCHAT, "fade", (char*)getUniqueId("fade", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", "{{ value_json.fade }}", //set availability_topic,device_class,value_template,
+  "{\"fade\":{{value}},\"save\":true}", "", "s", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain,
+  stateClassNone //State Class
+);
+
+
+
+createDiscovery("number", //set Type
+  subjectMQTTtoCHAT, "pulsecycle", (char*)getUniqueId("pulsecycle", "").c_str(), //set state_topic,name,uniqueId
+  will_Topic, "", jsonVal , //set availability_topic,device_class,value_template,
+  "{\"pulsecycle\":{{value}},\"save\":true}", "", "", //set,payload_on,payload_off,unit_of_meas,
+  0, //set  off_delay
+  Gateway_AnnouncementMsg, will_Message, true, subjectMQTTtoCHAT, //set,payload_available,payload_not available   ,is a gateway entity, command topic
+  "", "", "", "", false, // device name, device manufacturer, device model, device ID, retain,
+  stateClassNone //State Class
+);
+
+#endif
+
+
 #  ifdef ZsensorGPIOInput
   Log.trace(F("GPIOInputDiscovery" CR));
   char* GPIOInputsensor[8] = {"binary_sensor", "GPIOInput", "", "", jsonGpio, INPUT_GPIO_ON_VALUE, INPUT_GPIO_OFF_VALUE, ""};
@@ -948,6 +1090,7 @@ void pubMqttDiscovery() {
 #  endif
 
 #  ifdef ZactuatorONOFF
+
   Log.trace(F("actuatorONOFFDiscovery" CR));
   char* actuatorONOFF[8] = {"switch", "actuatorONOFF", "", "", "", "{\"cmd\":1}", "{\"cmd\":0}", ""};
   //component type,name,availability topic,device class,value template,payload on, payload off, unit of measurement

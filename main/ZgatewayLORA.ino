@@ -496,8 +496,11 @@ return ;   //do nothing
   std::string sensor = LORAdata["id"];
 
     LORAdata["name"]=LORAdata["id"];
-    LORAdata["id"]= sensor+(std::string)"/History/"+out;
-    LORAdata["Charge"]=LORAdata["Charge%"];
+    //LORAdata["id"]= sensor+(std::string)"/History/"+out;
+
+    LORAdata["id"]= sensor+(std::string)"/Lastmessage";
+    
+   // LORAdata["Charge"]=LORAdata["Charge"];
     LORAdata["Time"]=    out;
     LORAdata["rssi"] = (int)LoRa.packetRssi();
     LORAdata["snr"] = (float)LoRa.packetSnr();
