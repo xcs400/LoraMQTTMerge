@@ -32,6 +32,7 @@
 #  include <LoRa.h>
 #  include <SPI.h>
 #  include <Wire.h>
+#include "config_LORA.h"
 //#  include <ListLib.h>
 
 #  define WIPHONE_MESSAGE_MAGIC   0x6c6d
@@ -446,7 +447,7 @@ return ;   //do nothing
 
 
  //displaysetFont(ArialMT_Plain_10);
- 
+  Log.notice(F("ididid" CR),LORAdata["id"] );
  if (LORAdata.containsKey("model")) 
   {
       String model  =   LORAdata["model"];

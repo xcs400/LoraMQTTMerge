@@ -164,16 +164,16 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  define mqtt_max_packet_size 128
 #endif
 
-#  define SENSORNAME "id=NomEnClair"
+#  define SENSORNAME "tele2"
 
 #ifndef MQTT_USER
-#  define MQTT_USER ""
+#  define MQTT_USER "Mosquitouser"
 #endif
 #ifndef MQTT_PASS
-#  define MQTT_PASS ""
+#  define MQTT_PASS "expresso"
 #endif
 #ifndef MQTT_SERVER
-#  define MQTT_SERVER "broker.emqx.io"
+#  define MQTT_SERVER "192.168.1.70"
 #  define MQTT_SERVERyyyyyy "811bda171b64435d9323de3dac2d9bbf.s1.eu.hivemq.cloud"
 #endif
 #ifndef MQTT_PORT

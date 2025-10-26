@@ -27,6 +27,9 @@
 */
 #include "User_config.h"
 #include <ListLib.h>
+extern int MeasureTuyaBidiMeter(void);
+extern  void TUYAtoLORA(void);
+extern  int Setup_sensor_tuya_bidimeter();
 
 
  int nbsensorDS1820;
@@ -1375,6 +1378,17 @@ if ( setupZsensorHTU21())
   setupFASTLED();
   modules.add(ZactuatorFASTLED);
 #endif
+
+
+  
+#ifdef ZTuyaBidiMeter
+  Setup_sensor_tuya_bidimeter();
+  
+  modules.add("ZTuyaBidiMeter");
+#endif
+
+
+
 #ifdef ZactuatorPWM
   setupPWM();
   modules.add(ZactuatorPWM);
@@ -1603,10 +1617,15 @@ void ESPRestart(byte reason) {
 void ESPRestart(byte reason) {}
 #endif
 
+
+
 #if defined(ESPWifiManualSetup)
 void setup_wifi() {
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(wifi_ssid, wifi_password);
+  
+
+
   Log.trace(F("Connecting to %s" CR), wifi_ssid);
 #  ifdef wifi_ssid1
   wifiMulti.addAP(wifi_ssid1, wifi_password1);
@@ -1616,7 +1635,8 @@ void setup_wifi() {
 
   // We start by connecting to a WiFi network
 
-#  ifdef NetworkAdvancedSetup
+#ifdef NetworkAdvancedSetup
+
   IPAddress ip_adress;
   IPAddress gateway_adress;
   IPAddress subnet_adress;
@@ -1889,7 +1909,8 @@ void setup_wifimanager(bool reset_settings) {
   wifiManager.setSaveConfigCallback(saveConfigCallback);
 
 //set static IP
-#  ifdef NetworkAdvancedSetup
+#ifdef NetworkAdvancedSetup
+ddsds
   Log.trace(F("Adv wifi cfg" CR));
   IPAddress ip_adress;
   IPAddress gateway_adress;
@@ -1900,7 +1921,7 @@ void setup_wifimanager(bool reset_settings) {
   subnet_adress.fromString(NET_MASK);
   dns_adress.fromString(NET_DNS);
   wifiManager.setSTAStaticIPConfig(ip_adress, gateway_adress, subnet_adress, dns_adress);
-#  endif
+#endif
 
 #  ifndef WIFIMNG_HIDE_MQTT_CONFIG
   //add all your parameters here
@@ -2278,6 +2299,13 @@ void loop() {
         launchLORADiscovery(publishDiscovery);
 #  endif
 #endif
+
+
+#ifdef ZTuyaBidiMeter
+
+      MeasureTuyaBidiMeter();
+#endif
+
 #ifdef ZgatewayRF
       RFtoMQTT();
 #endif
@@ -2319,6 +2347,12 @@ void loop() {
 #ifdef ZactuatorFASTLED
       FASTLEDLoop();
 #endif
+
+#ifdef ZTuyaBidiMeter
+
+      TUYAtoLORA();
+#endif
+
 #ifdef ZactuatorPWM
       PWMLoop();
 #endif
@@ -2671,6 +2705,8 @@ void receivingMQTT(char* topicOri, char* datacallback) {
 #if defined(ZsensorGPIOInputChat)
     MQTTtoChat (topicOri,jsondata);
 #  endif
+
+
 
 
 #  ifdef ZgatewayLORA
@@ -3074,7 +3110,9 @@ void MQTTtoSYS(char* topicOri, JsonObject& SYSdata) { // json object decoding
         strncpy(s4, SYSdata["s4"], parameters_size);
           Log.notice(F("[SYS] ici MQTTtoSYS s4: %s " CR), s4);
      }
-      saveConfig();
+     #  ifndef ESPWifiManualSetup
+          saveConfig();
+#  endif
  //     disconnectClient = true; // trigger reconnect in loop using the new topic/name
     }
 
